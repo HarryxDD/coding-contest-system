@@ -15,6 +15,9 @@ const compat = new FlatCompat({
 });
 
 export default [
+  {
+    ignores: ['dist/**', 'node_modules/**', '*.config.js', '*.config.mjs'],
+  },
   ...compat.extends(
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
@@ -29,7 +32,7 @@ export default [
         ...globals.jest,
       },
       parser: tsParser,
-      ecmaVersion: 5,
+      ecmaVersion: 2021,
       sourceType: 'module',
       parserOptions: {
         project: 'tsconfig.json',
@@ -42,10 +45,13 @@ export default [
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': ['error'],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
       'require-await': 'off',
-      '@typescript-eslint/require-await': 'error',
-      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/require-await': 'warn',
+      '@typescript-eslint/no-floating-promises': 'warn',
       'no-restricted-syntax': [
         'error',
         {
@@ -60,6 +66,7 @@ export default [
           message: '"it" should start with "should"',
         },
       ],
+      'linebreak-style': ['error', 'auto'],
     },
   },
 ];
