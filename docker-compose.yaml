@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:17.6-alpine
+    ports:
+      - ${DATABASE_PORT}:5432
+    volumes:
+      - contest-system-db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+
+volumes:
+  contest-system-db:
