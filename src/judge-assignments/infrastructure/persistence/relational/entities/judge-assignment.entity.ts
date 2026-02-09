@@ -14,7 +14,7 @@ import { EntityRelationalHelper } from '../../../../../utils/entity-helper';
 @Entity('judge_assignments')
 @Index(['contestId', 'judgeId'], { unique: true })
 export class JudgeAssignmentEntity extends EntityRelationalHelper {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'uuid', name: 'contest_id' })

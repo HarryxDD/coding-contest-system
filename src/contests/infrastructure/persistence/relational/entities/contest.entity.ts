@@ -13,7 +13,7 @@ import { EntityRelationalHelper } from '../../../../../utils/entity-helper';
 
 @Entity('contests')
 export class ContestEntity extends EntityRelationalHelper {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'varchar', length: 100 })

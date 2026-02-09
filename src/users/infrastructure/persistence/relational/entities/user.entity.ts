@@ -13,7 +13,7 @@ import { EntityRelationalHelper } from '../../../../../utils/entity-helper';
   name: 'users',
 })
 export class UserEntity extends EntityRelationalHelper {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'varchar', length: 50, unique: true, nullable: false })

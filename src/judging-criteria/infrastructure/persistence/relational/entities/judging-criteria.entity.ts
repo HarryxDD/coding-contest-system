@@ -10,7 +10,7 @@ import { EntityRelationalHelper } from '../../../../../utils/entity-helper';
 
 @Entity('judging_criteria')
 export class JudgingCriteriaEntity extends EntityRelationalHelper {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'uuid', name: 'contest_id' })

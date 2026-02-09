@@ -20,7 +20,7 @@ export enum StatusEnum {
 
 @Entity('submissions')
 export class SubmissionEntity extends EntityRelationalHelper {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'uuid', name: 'team_id' })
