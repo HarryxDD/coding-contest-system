@@ -26,11 +26,11 @@ export class TeamMemberEntity extends EntityRelationalHelper {
   @CreateDateColumn({ name: 'joined_at' })
   joinedAt: Date;
 
-  @ManyToOne(() => TeamEntity, { eager: false })
+  @ManyToOne(() => TeamEntity, { eager: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'team_id' })
   team?: TeamEntity;
 
-  @ManyToOne(() => UserEntity, { eager: false })
+  @ManyToOne(() => UserEntity, { eager: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user?: UserEntity;
 }

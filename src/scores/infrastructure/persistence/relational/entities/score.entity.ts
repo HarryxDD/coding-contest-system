@@ -40,15 +40,15 @@ export class ScoreEntity extends EntityRelationalHelper {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => SubmissionEntity, { eager: false })
+  @ManyToOne(() => SubmissionEntity, { eager: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'submission_id' })
   submission?: SubmissionEntity;
 
-  @ManyToOne(() => UserEntity, { eager: false })
+  @ManyToOne(() => UserEntity, { eager: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'judge_id' })
   judge?: UserEntity;
 
-  @ManyToOne(() => JudgingCriteriaEntity, { eager: false })
+  @ManyToOne(() => JudgingCriteriaEntity, { eager: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'criteria_id' })
   criteria?: JudgingCriteriaEntity;
 }

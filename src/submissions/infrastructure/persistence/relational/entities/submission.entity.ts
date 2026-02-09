@@ -66,11 +66,11 @@ export class SubmissionEntity extends EntityRelationalHelper {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => TeamEntity, { eager: false })
+  @ManyToOne(() => TeamEntity, { eager: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'team_id' })
   team?: TeamEntity;
 
-  @ManyToOne(() => ContestEntity, { eager: false })
+  @ManyToOne(() => ContestEntity, { eager: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'contest_id' })
   contest?: ContestEntity;
 }

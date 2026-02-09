@@ -25,7 +25,7 @@ export class TeamEntity extends EntityRelationalHelper {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @ManyToOne(() => ContestEntity, { eager: false })
+  @ManyToOne(() => ContestEntity, { eager: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'contest_id' })
   contest?: ContestEntity;
 }

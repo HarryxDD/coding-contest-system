@@ -25,7 +25,7 @@ export class JudgingCriteriaEntity extends EntityRelationalHelper {
   @Column({ type: 'int', name: 'max_score' })
   maxScore: number;
 
-  @ManyToOne(() => ContestEntity, { eager: false })
+  @ManyToOne(() => ContestEntity, { eager: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'contest_id' })
   contest?: ContestEntity;
 }

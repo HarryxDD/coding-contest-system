@@ -26,11 +26,11 @@ export class JudgeAssignmentEntity extends EntityRelationalHelper {
   @CreateDateColumn({ name: 'assigned_at' })
   assignedAt: Date;
 
-  @ManyToOne(() => ContestEntity, { eager: false })
+  @ManyToOne(() => ContestEntity, { eager: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'contest_id' })
   contest?: ContestEntity;
 
-  @ManyToOne(() => UserEntity, { eager: false })
+  @ManyToOne(() => UserEntity, { eager: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'judge_id' })
   judge?: UserEntity;
 }
