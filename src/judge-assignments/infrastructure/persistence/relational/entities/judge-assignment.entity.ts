@@ -14,14 +14,14 @@ import { EntityRelationalHelper } from '../../../../../utils/entity-helper';
 @Entity('judge_assignments')
 @Index(['contestId', 'judgeId'], { unique: true })
 export class JudgeAssignmentEntity extends EntityRelationalHelper {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-  @Column({ type: 'int', name: 'contest_id' })
-  contestId: number;
+  @Column({ type: 'uuid', name: 'contest_id' })
+  contestId: string;
 
-  @Column({ type: 'int', name: 'judge_id' })
-  judgeId: number;
+  @Column({ type: 'uuid', name: 'judge_id' })
+  judgeId: string;
 
   @CreateDateColumn({ name: 'assigned_at' })
   assignedAt: Date;

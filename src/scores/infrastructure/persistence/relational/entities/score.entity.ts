@@ -16,17 +16,17 @@ import { EntityRelationalHelper } from '../../../../../utils/entity-helper';
 @Entity('scores')
 @Index(['submissionId', 'judgeId', 'criteriaId'], { unique: true })
 export class ScoreEntity extends EntityRelationalHelper {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-  @Column({ type: 'int', name: 'submission_id' })
-  submissionId: number;
+  @Column({ type: 'uuid', name: 'submission_id' })
+  submissionId: string;
 
-  @Column({ type: 'int', name: 'judge_id' })
-  judgeId: number;
+  @Column({ type: 'uuid', name: 'judge_id' })
+  judgeId: string;
 
-  @Column({ type: 'int', name: 'criteria_id' })
-  criteriaId: number;
+  @Column({ type: 'uuid', name: 'criteria_id' })
+  criteriaId: string;
 
   @Column({ type: 'int' })
   score: number;

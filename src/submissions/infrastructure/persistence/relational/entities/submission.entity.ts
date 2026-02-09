@@ -12,18 +12,24 @@ import { TeamEntity } from '../../../../../teams/infrastructure/persistence/rela
 import { ContestEntity } from '../../../../../contests/infrastructure/persistence/relational/entities/contest.entity';
 import { EntityRelationalHelper } from '../../../../../utils/entity-helper';
 
+export enum StatusEnum {
+  DRAFT = 'draft',
+  SUBMITTED = 'submitted',
+  EVALUATED = 'evaluated',
+}
+
 @Entity('submissions')
 export class SubmissionEntity extends EntityRelationalHelper {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-  @Column({ type: 'int', name: 'team_id' })
+  @Column({ type: 'uuid', name: 'team_id' })
   @Index()
-  teamId: number;
+  teamId: string;
 
-  @Column({ type: 'int', name: 'contest_id' })
+  @Column({ type: 'uuid', name: 'contest_id' })
   @Index()
-  contestId: number;
+  contestId: string;
 
   @Column({ type: 'varchar', length: 200 })
   title: string;
@@ -44,6 +50,14 @@ export class SubmissionEntity extends EntityRelationalHelper {
 
   @Column({ type: 'varchar', length: 500, nullable: true, name: 'video_url' })
   videoUrl: string | null;
+
+  @Column({
+    type: 'enum',
+    enum: StatusEnum,
+    default: StatusEnum.DRAFT,
+    nullable: false,
+  })
+  status: StatusEnum;
 
   @CreateDateColumn({ name: 'submitted_at' })
   @Index()

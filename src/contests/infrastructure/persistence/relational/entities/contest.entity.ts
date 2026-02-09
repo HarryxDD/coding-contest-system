@@ -13,8 +13,8 @@ import { EntityRelationalHelper } from '../../../../../utils/entity-helper';
 
 @Entity('contests')
 export class ContestEntity extends EntityRelationalHelper {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
   @Column({ type: 'varchar', length: 100 })
   name: string;
@@ -41,9 +41,9 @@ export class ContestEntity extends EntityRelationalHelper {
   @Column({ type: 'timestamp', name: 'submission_deadline' })
   submissionDeadline: Date;
 
-  @Column({ type: 'int', name: 'organizer_id' })
+  @Column({ type: 'uuid', name: 'organizer_id' })
   @Index()
-  organizerId: number;
+  organizerId: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

@@ -13,7 +13,8 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "test": "jest"
+    "test": "jest",
+    "seed:run": "ts-node -r tsconfig-paths/register ./src/database/seeds/relational/run-seed.ts"
   },
   "dependencies": {
     "@nestjs/common": "11.1.6",

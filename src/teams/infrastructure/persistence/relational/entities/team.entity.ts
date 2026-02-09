@@ -12,15 +12,15 @@ import { EntityRelationalHelper } from '../../../../../utils/entity-helper';
 
 @Entity('teams')
 export class TeamEntity extends EntityRelationalHelper {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
   @Column({ type: 'varchar', length: 100 })
   name: string;
 
-  @Column({ type: 'int', name: 'contest_id' })
+  @Column({ type: 'uuid', name: 'contest_id' })
   @Index()
-  contestId: number;
+  contestId: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

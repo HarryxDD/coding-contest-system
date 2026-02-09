@@ -14,14 +14,14 @@ import { EntityRelationalHelper } from '../../../../../utils/entity-helper';
 @Entity('team_members')
 @Index(['teamId', 'userId'], { unique: true })
 export class TeamMemberEntity extends EntityRelationalHelper {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-  @Column({ type: 'int', name: 'team_id' })
-  teamId: number;
+  @Column({ type: 'uuid', name: 'team_id' })
+  teamId: string;
 
-  @Column({ type: 'int', name: 'user_id' })
-  userId: number;
+  @Column({ type: 'uuid', name: 'user_id' })
+  userId: string;
 
   @CreateDateColumn({ name: 'joined_at' })
   joinedAt: Date;
