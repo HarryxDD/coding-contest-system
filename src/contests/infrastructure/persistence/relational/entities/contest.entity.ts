@@ -41,6 +41,9 @@ export class ContestEntity extends EntityRelationalHelper {
   @Column({ type: 'timestamp', name: 'submission_deadline' })
   submissionDeadline: Date;
 
+  @Column({ type: 'boolean', name: 'is_active', default: false })
+  isActive: boolean;
+
   @Column({ type: 'uuid', name: 'organizer_id' })
   @Index()
   organizerId: string;
