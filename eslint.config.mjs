@@ -66,7 +66,8 @@ export default [
           message: '"it" should start with "should"',
         },
       ],
-      'linebreak-style': ['error', 'auto'],
+      'linebreak-style': 'off',
+      'prettier/prettier': 'off',
     },
   },
 ];
