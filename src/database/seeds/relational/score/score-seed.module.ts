@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScoreSeedService } from './score-seed.service';
-import { ScoreEntity } from '../../../../scores/infrastructure/persistence/relational/entities/score.entity';
-import { SubmissionEntity } from '../../../../submissions/infrastructure/persistence/relational/entities/submission.entity';
-import { UserEntity } from '../../../../users/infrastructure/persistence/relational/entities/user.entity';
-import { JudgingCriteriaEntity } from '../../../../judging-criteria/infrastructure/persistence/relational/entities/judging-criteria.entity';
+import { ScoreEntity } from '../../../../scores/infrastructure/entities/score.entity';
+import { SubmissionEntity } from '../../../../submissions/infrastructure/entities/submission.entity';
+import { UserEntity } from '../../../../users/infrastructure/entities/user.entity';
+import { JudgingCriteriaEntity } from '../../../../judging-criteria/infrastructure/entities/judging-criteria.entity';
 
 @Module({
   imports: [

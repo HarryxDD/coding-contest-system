@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TeamEntity } from '../../../../teams/infrastructure/persistence/relational/entities/team.entity';
-import { ContestEntity } from '../../../../contests/infrastructure/persistence/relational/entities/contest.entity';
+import { TeamEntity } from '../../../../teams/infrastructure/entities/team.entity';
+import { ContestEntity } from '../../../../contests/infrastructure/entities/contest.entity';
 
 @Injectable()
 export class TeamSeedService {

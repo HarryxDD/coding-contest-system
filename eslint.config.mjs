@@ -68,6 +68,7 @@ export default [
       ],
       'linebreak-style': 'off',
       'prettier/prettier': 'off',
+      'no-restricted-syntax': 'off',
     },
   },
 ];

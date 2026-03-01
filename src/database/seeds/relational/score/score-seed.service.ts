@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ScoreEntity } from '../../../../scores/infrastructure/persistence/relational/entities/score.entity';
-import { SubmissionEntity } from '../../../../submissions/infrastructure/persistence/relational/entities/submission.entity';
-import { UserEntity } from '../../../../users/infrastructure/persistence/relational/entities/user.entity';
-import { JudgingCriteriaEntity } from '../../../../judging-criteria/infrastructure/persistence/relational/entities/judging-criteria.entity';
+import { ScoreEntity } from '../../../../scores/infrastructure/entities/score.entity';
+import { SubmissionEntity } from '../../../../submissions/infrastructure/entities/submission.entity';
+import { UserEntity } from '../../../../users/infrastructure/entities/user.entity';
+import { JudgingCriteriaEntity } from '../../../../judging-criteria/infrastructure/entities/judging-criteria.entity';
 import { RoleEnum } from '../../../../roles/roles.enum';
 
 @Injectable()
