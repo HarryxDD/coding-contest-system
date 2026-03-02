@@ -124,7 +124,7 @@ http://localhost:3000
 ```
 
 ### Production mode
-Build and run the application in production mode:
+Build and run the application in production mode
 ```bash
 npm run build
 npm run start:prod
