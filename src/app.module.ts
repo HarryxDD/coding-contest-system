@@ -9,6 +9,8 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ContestsModule } from './contests/contests.module';
 import { SubmissionsModule } from './submissions/submissions.module';
+import { JudgingCriteriaModule } from './judging-criteria/judging-criteria.module';
+import { JudgeAssignmentsModule } from './judge-assignments/judge-assignments.module';
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
@@ -29,6 +31,8 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
     UsersModule,
     ContestsModule,
     SubmissionsModule,
+    JudgingCriteriaModule,
+    JudgeAssignmentsModule,
   ],
 })
 export class AppModule { }
