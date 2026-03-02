@@ -7,6 +7,7 @@ import { TypeOrmConfigService } from './database/typeorm-config.service';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { ContestsModule } from './contests/contests.module';
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
@@ -25,6 +26,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
     infrastructureDatabaseModule,
     AuthModule,
     UsersModule,
+    ContestsModule,
   ],
 })
 export class AppModule { }

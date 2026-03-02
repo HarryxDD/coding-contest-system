@@ -5,7 +5,7 @@ export class InfinityPaginationResponseDto<T> {
   data: T[];
   page: number;
   totalItems: number;
-  hasNextPage: boolean;
+  // hasNextPage: boolean;
 }
 
 export function InfinityPaginationResponse<T>(classReference: Type<T>) {
@@ -13,11 +13,11 @@ export function InfinityPaginationResponse<T>(classReference: Type<T>) {
     @ApiProperty({ type: [classReference] })
     data!: T[];
 
-    @ApiProperty({
-      type: Boolean,
-      example: true,
-    })
-    hasNextPage: boolean;
+    // @ApiProperty({
+    //   type: Boolean,
+    //   example: true,
+    // })
+    // hasNextPage: boolean;
 
     @ApiProperty({
       type: Number,
