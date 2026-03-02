@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { JudgeAssignmentEntity } from '../../../../judge-assignments/infrastructure/persistence/relational/entities/judge-assignment.entity';
-import { ContestEntity } from '../../../../contests/infrastructure/persistence/relational/entities/contest.entity';
-import { UserEntity } from '../../../../users/infrastructure/persistence/relational/entities/user.entity';
+import { JudgeAssignmentEntity } from '../../../../judge-assignments/infrastructure/entities/judge-assignment.entity';
+import { ContestEntity } from '../../../../contests/infrastructure/entities/contest.entity';
+import { UserEntity } from '../../../../users/infrastructure/entities/user.entity';
 import { RoleEnum } from '../../../../roles/roles.enum';
 
 @Injectable()

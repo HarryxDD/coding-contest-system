@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { StatusEnum, SubmissionEntity } from '../../../../submissions/infrastructure/persistence/relational/entities/submission.entity';
-import { TeamEntity } from '../../../../teams/infrastructure/persistence/relational/entities/team.entity';
-import { ContestEntity } from '../../../../contests/infrastructure/persistence/relational/entities/contest.entity';
+import { StatusEnum, SubmissionEntity } from '../../../../submissions/infrastructure/entities/submission.entity';
+import { TeamEntity } from '../../../../teams/infrastructure/entities/team.entity';
+import { ContestEntity } from '../../../../contests/infrastructure/entities/contest.entity';
 
 @Injectable()
 export class SubmissionSeedService {

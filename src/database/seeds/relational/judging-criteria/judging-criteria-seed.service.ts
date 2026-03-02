@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { JudgingCriteriaEntity } from '../../../../judging-criteria/infrastructure/persistence/relational/entities/judging-criteria.entity';
-import { ContestEntity } from '../../../../contests/infrastructure/persistence/relational/entities/contest.entity';
+import { JudgingCriteriaEntity } from '../../../../judging-criteria/infrastructure/entities/judging-criteria.entity';
+import { ContestEntity } from '../../../../contests/infrastructure/entities/contest.entity';
 
 @Injectable()
 export class JudgingCriteriaSeedService {
