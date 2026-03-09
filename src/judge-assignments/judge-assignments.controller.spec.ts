@@ -4,6 +4,52 @@ import request from 'supertest';
 import { AppModule } from '../app.module';
 import { RoleEnum } from '../roles/roles.enum';
 
+/**
+ * JudgeAssignmentsController E2E Test Checklist
+ *
+ * POST /judge-assignments - Create judge assignment
+ * Reject unauthenticated requests (401)
+ * Block judges from creating assignments (403)
+ * Allow organizers to assign judges to contests (201) [POST creation failing]
+ * Reject duplicate judge assignments (409)
+ * Reject invalid input - missing required fields (400)
+ * Reject invalid UUID format for judgeId (400)
+ *
+ * GET /judge-assignments - List all assignments with pagination/filtering
+ * Reject unauthenticated requests (401)
+ * Return paginated list for authenticated users (200)
+ * Support filtering by contestId (200)
+ * Support filtering by judgeId (200)
+ * Support pagination parameters (page, limit) (200)
+ *
+ * GET /judge-assignments/:id - Get specific assignment
+ * Reject unauthenticated requests (401)
+ * Return 404 for non-existent assignment
+ * Return assignment details by ID (200) [depends on POST working]
+ *
+ * PATCH /judge-assignments/:id - Update assignment (future)
+ * Reject unauthenticated requests (401)
+ * Block non-organizers from updating (403)
+ * Allow organizers to update assignments (200)
+ * Return 404 for non-existent assignment
+ *
+ * DELETE /judge-assignments/:id - Delete assignment
+ * Reject unauthenticated requests (401)
+ * Block judges from deleting assignments (403)
+ * Allow organizers to delete assignments (200) [depends on POST working]
+ * Return 404 for non-existent assignment (404)
+ *
+ * GET /judge-assignments/contest/:contestId - Get judges for contest
+ * Reject unauthenticated requests (401)
+ * Return all judges assigned to a contest (200)
+ * Return empty array for contests with no judges (200)
+ *
+ * GET /judge-assignments/judge/:judgeId - Get contests for judge
+ * Reject unauthenticated requests (401)
+ * Return all contests a judge is assigned to (200)
+ * Return empty array for judges with no contests (200)
+ */
+
 describe('JudgeAssignmentsController (e2e)', () => {
   let app: INestApplication;
   let organizerToken: string;

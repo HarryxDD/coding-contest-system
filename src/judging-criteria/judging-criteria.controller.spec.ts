@@ -4,6 +4,45 @@ import request from 'supertest';
 import { AppModule } from '../app.module';
 import { RoleEnum } from '../roles/roles.enum';
 
+/**
+ * JudgingCriteriaController E2E Test Checklist
+ *
+ * POST /judging-criteria - Create judging criteria
+ * Reject unauthenticated requests (401)
+ * Block judges from creating criteria (403)
+ * Allow organizers to create judging criteria (201)
+ * Reject invalid input - missing required fields (400)
+ * Reject invalid maxScore (exceeds max value) (400)
+ *
+ * GET /judging-criteria - List all criteria with pagination/filtering
+ * Reject unauthenticated requests (401)
+ * Return paginated list for authenticated users (200)
+ * Support filtering by contestId (200)
+ * Support sorting parameters
+ * Support pagination parameters (page, limit)
+ *
+ * GET /judging-criteria/:id - Get specific criteria
+ * Reject unauthenticated requests (401)
+ * Return 404 for non-existent criteria
+ * Return criteria details by ID (200) [depends on creation]
+ *
+ * PATCH /judging-criteria/:id - Update criteria
+ * Reject unauthenticated requests (401)
+ * Block judges from updating criteria (403)
+ * Allow organizers to update criteria (200) [depends on creation]
+ * Return 404 for non-existent criteria
+ *
+ * DELETE /judging-criteria/:id - Delete criteria
+ * Reject unauthenticated requests (401)
+ * Block judges from deleting criteria (403)
+ * Allow organizers to delete criteria (200) [depends on creation]
+ * Return 404 for non-existent criteria
+ *
+ * GET /judging-criteria/contest/:contestId - Get criteria for contest
+ * Return all criteria for a contest (200)
+ * Return empty array for contests with no criteria (200)
+ */
+
 describe('JudgingCriteriaController (e2e)', () => {
   let app: INestApplication;
   let organizerToken: string;
