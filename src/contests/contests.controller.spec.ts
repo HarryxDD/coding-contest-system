@@ -3,26 +3,31 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../app.module';
 import { RoleEnum } from '../roles/roles.enum';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { UserEntity } from '../users/infrastructure/entities/user.entity';
+import { Repository } from 'typeorm';
 
 describe('ContestsController', () => {
     let app: INestApplication;
+    let userRepository: Repository<UserEntity>;
 
     let organizerToken: string;
     let participantToken: string;
     let createdContestId: string;
     const randomSuffix = Math.floor(Math.random() * 100000);
 
+    const extractToken = (body: any): string =>
+        body?.token ?? body?.accessToken ?? body?.access_token ?? '';
+
     const organizerUser = {
         username: `organizer${randomSuffix}`,
         email: `organizer${randomSuffix}@example.com`,
         password: 'securepassword',
-        role: RoleEnum.ORGANIZER,
     };
     const participantUser = {
         username: `participant${randomSuffix}`,
         email: `participant${randomSuffix}@example.com`,
         password: 'securepassword',
-        role: RoleEnum.PARTICIPANT,
     };
 
     const newContestPayload = {
@@ -44,18 +49,42 @@ describe('ContestsController', () => {
         app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 
         await app.init();
-        await request(app.getHttpServer()).post('/auth/register').send(organizerUser);
-        await request(app.getHttpServer()).post('/auth/register').send(participantUser);
+
+        // Get user repository for role management
+        userRepository = moduleFixture.get<Repository<UserEntity>>(
+            getRepositoryToken(UserEntity),
+        );
+
+        // Register organizer
+        const organizerRegisterRes = await request(app.getHttpServer())
+            .post('/auth/register')
+            .send(organizerUser)
+            .expect(201);
+        const organizerId = organizerRegisterRes.body.user.id;
+        
+        // Update organizer role
+        await userRepository.update(organizerId, { role: RoleEnum.ORGANIZER });
+
+        // Register participant
+        const partRegisterRes = await request(app.getHttpServer())
+            .post('/auth/register')
+            .send(participantUser)
+            .expect(201);
+        // Participant defaults to PARTICIPANT role, so no need to update
 
         const orgLoginRes = await request(app.getHttpServer())
             .post('/auth/login')
-            .send({ email: organizerUser.email, password: organizerUser.password });
-        organizerToken = orgLoginRes.body.token;
+            .send({ email: organizerUser.email, password: organizerUser.password })
+            .expect(200);
+        organizerToken = extractToken(orgLoginRes.body);
+        expect(organizerToken).toBeTruthy();
 
         const partLoginRes = await request(app.getHttpServer())
             .post('/auth/login')
-            .send({ email: participantUser.email, password: participantUser.password });
-        participantToken = partLoginRes.body.token;
+            .send({ email: participantUser.email, password: participantUser.password })
+            .expect(200);
+        participantToken = extractToken(partLoginRes.body);
+        expect(participantToken).toBeTruthy();
     });
 
     afterAll(async () => {

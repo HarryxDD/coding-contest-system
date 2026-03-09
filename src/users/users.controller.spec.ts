@@ -3,9 +3,13 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../app.module';
 import { RoleEnum } from '../roles/roles.enum';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { UserEntity } from './infrastructure/entities/user.entity';
+import { Repository } from 'typeorm';
 
 describe('UsersController (e2e)', () => {
     let app: INestApplication;
+    let userRepository: Repository<UserEntity>;
     let adminToken: string;
     let regularUserToken: string;
 
@@ -14,14 +18,12 @@ describe('UsersController (e2e)', () => {
         username: `admin${randomSuffix}`,
         email: `admin${randomSuffix}@example.com`,
         password: 'securepassword',
-        role: RoleEnum.ADMIN,
     };
 
     const regularUser = {
         username: `user${randomSuffix}`,
         email: `user${randomSuffix}@example.com`,
         password: 'securepassword',
-        role: RoleEnum.PARTICIPANT,
     };
 
     beforeAll(async () => {
@@ -33,20 +35,43 @@ describe('UsersController (e2e)', () => {
         app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
         await app.init();
 
-        await request(app.getHttpServer()).post('/auth/register').send(adminUser);
+        // Get user repository for role management
+        userRepository = moduleFixture.get<Repository<UserEntity>>(
+            getRepositoryToken(UserEntity),
+        );
+
+        // Register admin user
+        const adminRegisterRes = await request(app.getHttpServer())
+            .post('/auth/register')
+            .send(adminUser)
+            .expect(201);
+        const adminId = adminRegisterRes.body.user.id;
+        
+        // Update admin role
+        await userRepository.update(adminId, { role: RoleEnum.ADMIN });
 
         const adminLoginRes = await request(app.getHttpServer())
             .post('/auth/login')
-            .send({ email: adminUser.email, password: adminUser.password });
+            .send({ email: adminUser.email, password: adminUser.password })
+            .expect(200);
 
         adminToken = adminLoginRes.body.token;
+        expect(adminToken).toBeTruthy();
 
-        await request(app.getHttpServer()).post('/auth/register').send(regularUser);
+        // Register regular user
+        const regularRegisterRes = await request(app.getHttpServer())
+            .post('/auth/register')
+            .send(regularUser)
+            .expect(201);
+        // Regular user defaults to PARTICIPANT role
+
         const regularLoginRes = await request(app.getHttpServer())
             .post('/auth/login')
-            .send({ email: regularUser.email, password: regularUser.password });
+            .send({ email: regularUser.email, password: regularUser.password })
+            .expect(200);
 
         regularUserToken = regularLoginRes.body.token;
+        expect(regularUserToken).toBeTruthy();
     });
 
     afterAll(async () => {
