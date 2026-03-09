@@ -46,7 +46,7 @@ export class AuthService {
             email: registerDto.email,
             username: registerDto.username,
             passwordHash,
-            role: RoleEnum.PARTICIPANT // Default
+            role: registerDto.role ?? RoleEnum.PARTICIPANT
         });
 
         await this.userRepository.save(user);

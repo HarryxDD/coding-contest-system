@@ -12,6 +12,9 @@ describe('ContestsController', () => {
     let createdContestId: string;
     const randomSuffix = Math.floor(Math.random() * 100000);
 
+    const extractToken = (body: any): string =>
+        body?.token ?? body?.accessToken ?? body?.access_token ?? '';
+
     const organizerUser = {
         username: `organizer${randomSuffix}`,
         email: `organizer${randomSuffix}@example.com`,
@@ -49,13 +52,17 @@ describe('ContestsController', () => {
 
         const orgLoginRes = await request(app.getHttpServer())
             .post('/auth/login')
-            .send({ email: organizerUser.email, password: organizerUser.password });
-        organizerToken = orgLoginRes.body.token;
+            .send({ email: organizerUser.email, password: organizerUser.password })
+            .expect(200);
+        organizerToken = extractToken(orgLoginRes.body);
+        expect(organizerToken).toBeTruthy();
 
         const partLoginRes = await request(app.getHttpServer())
             .post('/auth/login')
-            .send({ email: participantUser.email, password: participantUser.password });
-        participantToken = partLoginRes.body.token;
+            .send({ email: participantUser.email, password: participantUser.password })
+            .expect(200);
+        participantToken = extractToken(partLoginRes.body);
+        expect(participantToken).toBeTruthy();
     });
 
     afterAll(async () => {

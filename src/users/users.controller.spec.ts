@@ -37,16 +37,20 @@ describe('UsersController (e2e)', () => {
 
         const adminLoginRes = await request(app.getHttpServer())
             .post('/auth/login')
-            .send({ email: adminUser.email, password: adminUser.password });
+            .send({ email: adminUser.email, password: adminUser.password })
+            .expect(200);
 
         adminToken = adminLoginRes.body.token;
+        expect(adminToken).toBeTruthy();
 
         await request(app.getHttpServer()).post('/auth/register').send(regularUser);
         const regularLoginRes = await request(app.getHttpServer())
             .post('/auth/login')
-            .send({ email: regularUser.email, password: regularUser.password });
+            .send({ email: regularUser.email, password: regularUser.password })
+            .expect(200);
 
         regularUserToken = regularLoginRes.body.token;
+        expect(regularUserToken).toBeTruthy();
     });
 
     afterAll(async () => {

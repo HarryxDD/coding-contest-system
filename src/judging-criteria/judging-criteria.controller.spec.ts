@@ -12,6 +12,11 @@ describe('JudgingCriteriaController (e2e)', () => {
   let criteriaId: string;
 
   const randomSuffix = Math.floor(Math.random() * 100000);
+  const NON_EXISTENT_ID = '00000000-0000-0000-0000-000000000000';
+
+  const extractToken = (body: any): string =>
+    body?.token ?? body?.accessToken ?? body?.access_token ?? '';
+
   const organizerUser = {
     username: `organizer${randomSuffix}`,
     email: `organizer${randomSuffix}@example.com`,
@@ -39,15 +44,39 @@ describe('JudgingCriteriaController (e2e)', () => {
     await request(app.getHttpServer()).post('/auth/register').send(organizerUser);
     const organizerLoginRes = await request(app.getHttpServer())
       .post('/auth/login')
-      .send({ email: organizerUser.email, password: organizerUser.password });
-    organizerToken = organizerLoginRes.body.access_token;
+      .send({ email: organizerUser.email, password: organizerUser.password })
+      .expect(200);
+    organizerToken = extractToken(organizerLoginRes.body);
+    expect(organizerToken).toBeTruthy();
 
     // Register and login judge
     await request(app.getHttpServer()).post('/auth/register').send(judgeUser);
     const judgeLoginRes = await request(app.getHttpServer())
       .post('/auth/login')
-      .send({ email: judgeUser.email, password: judgeUser.password });
-    judgeToken = judgeLoginRes.body.access_token;
+      .send({ email: judgeUser.email, password: judgeUser.password })
+      .expect(200);
+    judgeToken = extractToken(judgeLoginRes.body);
+    expect(judgeToken).toBeTruthy();
+
+    // Create a test contest
+    const contestPayload = {
+      name: `Test Contest ${randomSuffix}`,
+      description: 'Test contest for judging criteria',
+      reward: '$5,000',
+      maxTeamSize: 5,
+      startDate: '2026-03-10T00:00:00.000Z',
+      endDate: '2026-03-20T00:00:00.000Z',
+      submissionDeadline: '2026-03-18T00:00:00.000Z',
+    };
+
+    const contestRes = await request(app.getHttpServer())
+      .post('/contests')
+      .set('Authorization', `Bearer ${organizerToken}`)
+      .send(contestPayload)
+      .expect(201);
+
+    contestId = contestRes.body.id;
+    expect(contestId).toBeTruthy();
   });
 
   afterAll(async () => {
@@ -59,7 +88,7 @@ describe('JudgingCriteriaController (e2e)', () => {
       return request(app.getHttpServer())
         .post('/judging-criteria')
         .send({
-          contestId: 'test-contest-id',
+          contestId: contestId,
           name: 'Code Quality',
           description: 'Evaluates code quality',
           maxScore: 50,
@@ -72,7 +101,7 @@ describe('JudgingCriteriaController (e2e)', () => {
         .post('/judging-criteria')
         .set('Authorization', `Bearer ${judgeToken}`)
         .send({
-          contestId: 'test-contest-id',
+          contestId: contestId,
           name: 'Code Quality',
           description: 'Evaluates code quality',
           maxScore: 50,
@@ -85,7 +114,7 @@ describe('JudgingCriteriaController (e2e)', () => {
         .post('/judging-criteria')
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({
-          contestId: 'test-contest-id-12345',
+          contestId: contestId,
           name: 'Code Quality',
           description: 'Evaluates code quality',
           maxScore: 50,
@@ -114,7 +143,7 @@ describe('JudgingCriteriaController (e2e)', () => {
         .post('/judging-criteria')
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({
-          contestId: 'test-contest-id',
+          contestId: contestId,
           name: 'Code Quality',
           maxScore: 2000, // exceeds max of 1000
         })
@@ -140,7 +169,7 @@ describe('JudgingCriteriaController (e2e)', () => {
 
     it('should support filtering by contestId', async () => {
       const response = await request(app.getHttpServer())
-        .get('/judging-criteria?contestId=test-contest-id-12345')
+        .get(`/judging-criteria?contestId=${contestId}`)
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(200);
 
@@ -160,7 +189,7 @@ describe('JudgingCriteriaController (e2e)', () => {
   describe('GET /judging-criteria/:id', () => {
     it('should return 404 for non-existent criteria', () => {
       return request(app.getHttpServer())
-        .get('/judging-criteria/invalid-id')
+        .get(`/judging-criteria/${NON_EXISTENT_ID}`)
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(404);
     });
@@ -172,7 +201,7 @@ describe('JudgingCriteriaController (e2e)', () => {
           .post('/judging-criteria')
           .set('Authorization', `Bearer ${organizerToken}`)
           .send({
-            contestId: 'test-contest-id',
+            contestId: contestId,
             name: 'Design Quality',
             description: 'Evaluates design quality',
             maxScore: 30,
@@ -223,7 +252,7 @@ describe('JudgingCriteriaController (e2e)', () => {
 
     it('should return 404 for non-existent criteria', () => {
       return request(app.getHttpServer())
-        .patch('/judging-criteria/invalid-id')
+        .patch(`/judging-criteria/${NON_EXISTENT_ID}`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({ name: 'Updated Name' })
         .expect(404);
@@ -239,7 +268,7 @@ describe('JudgingCriteriaController (e2e)', () => {
         .post('/judging-criteria')
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({
-          contestId: 'test-contest-id',
+          contestId: contestId,
           name: 'Delete Test Criteria',
           maxScore: 25,
         });
@@ -270,7 +299,7 @@ describe('JudgingCriteriaController (e2e)', () => {
 
     it('should return 404 when deleting non-existent criteria', () => {
       return request(app.getHttpServer())
-        .delete('/judging-criteria/invalid-id')
+        .delete(`/judging-criteria/${NON_EXISTENT_ID}`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .expect(404);
     });
@@ -279,7 +308,7 @@ describe('JudgingCriteriaController (e2e)', () => {
   describe('GET /judging-criteria/contest/:contestId', () => {
     it('should return all criteria for a contest', async () => {
       const response = await request(app.getHttpServer())
-        .get('/judging-criteria/contest/test-contest-id-12345')
+        .get(`/judging-criteria/contest/${contestId}`)
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(200);
 
