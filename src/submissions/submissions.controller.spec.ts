@@ -14,7 +14,6 @@ describe('SubmissionsController', () => {
         username: `participant${randomSuffix}`,
         email: `participant${randomSuffix}@example.com`,
         password: 'securepassword',
-        role: RoleEnum.PARTICIPANT,
     };
 
     const newSubmissionPayload = {
@@ -36,9 +35,11 @@ describe('SubmissionsController', () => {
         await request(app.getHttpServer()).post('/auth/register').send(participantUser);
         const loginRes = await request(app.getHttpServer())
             .post('/auth/login')
-            .send({ email: participantUser.email, password: participantUser.password });
+            .send({ email: participantUser.email, password: participantUser.password })
+            .expect(200);
 
         participantToken = loginRes.body.token;
+        expect(participantToken).toBeTruthy();
     });
 
     afterAll(async () => {
