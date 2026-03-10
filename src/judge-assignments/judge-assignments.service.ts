@@ -1,13 +1,12 @@
 import { Injectable, Inject, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
-import { judgeAssignmentRepository, IJudgeAssignmentRepository } from './infrastructure/judge-assignment.repository';
+import { judgeAssignmentRepository } from './infrastructure/judge-assignment.repository';
 import { CreateJudgeAssignmentDto } from './dto/create-judge-assignment.dto';
 import { QueryJudgeAssignmentDto } from './dto/query-judge-assignment.dto';
 
 @Injectable()
 export class JudgeAssignmentsService {
   constructor(
-    @Inject(judgeAssignmentRepository)
-    private readonly repository: IJudgeAssignmentRepository,
+    private readonly repository: judgeAssignmentRepository,
   ) {}
 
   async create(dto: CreateJudgeAssignmentDto) {

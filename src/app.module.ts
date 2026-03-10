@@ -9,6 +9,9 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ContestsModule } from './contests/contests.module';
 import { SubmissionsModule } from './submissions/submissions.module';
+import { TeamsModule } from './teams/teams.module';
+import { TeamMembersModule } from './team-members/team-members.module';
+import { ScoresModule } from './scores/scores.module';
 import { JudgingCriteriaModule } from './judging-criteria/judging-criteria.module';
 import { JudgeAssignmentsModule } from './judge-assignments/judge-assignments.module';
 
@@ -31,8 +34,11 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
     UsersModule,
     ContestsModule,
     SubmissionsModule,
+    TeamsModule,
+    TeamMembersModule,
+    ScoresModule,
     JudgingCriteriaModule,
     JudgeAssignmentsModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}
