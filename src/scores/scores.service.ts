@@ -2,13 +2,20 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { scoreRepository } from './infrastructure/score.repository';
 import { submissionRepository } from '../submissions/infrastructure/submission.repository';
-import { judgeAssignmentRepository } from '../judge-assignments/infrastructure/judge-assignment.repository';
-import { judgingCriteriaRepository } from '../judging-criteria/infrastructure/judging-criteria.repository';
+import {
+  judgeAssignmentRepository,
+  IJudgeAssignmentRepository,
+} from '../judge-assignments/infrastructure/judge-assignment.repository';
+import {
+  judgingCriteriaRepository,
+  IJudgingCriteriaRepository,
+} from '../judging-criteria/infrastructure/judging-criteria.repository';
 import { CreateScoreDto } from './dto/create-score.dto';
 import { UpdateScoreDto } from './dto/update-score.dto';
 import { QueryScoreDto } from './dto/query-score.dto';
@@ -17,10 +24,14 @@ import { RoleEnum } from '../roles/roles.enum';
 @Injectable()
 export class ScoresService {
   constructor(
+    @Inject(scoreRepository)
     private readonly scoreRepo: scoreRepository,
+    @Inject(submissionRepository)
     private readonly submissionRepo: submissionRepository,
-    private readonly judgeAssignmentRepo: judgeAssignmentRepository,
-    private readonly criteriaRepo: judgingCriteriaRepository,
+    @Inject(judgeAssignmentRepository)
+    private readonly judgeAssignmentRepo: IJudgeAssignmentRepository,
+    @Inject(judgingCriteriaRepository)
+    private readonly criteriaRepo: IJudgingCriteriaRepository,
   ) {}
 
   async create(createDto: CreateScoreDto, judgeId: string) {

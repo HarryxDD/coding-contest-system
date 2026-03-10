@@ -3,14 +3,14 @@ import { ScoresController } from './scores.controller';
 import { ScoresService } from './scores.service';
 import { ScoresInfrastructureModule } from './infrastructure/infrastructure.module';
 import { InfrastructureModule as SubmissionsInfrastructureModule } from '../submissions/infrastructure/infrastructure.module';
-import { JudgeAssignmentsInfrastructureModule } from '../judge-assignments/infrastructure/infrastructure.module';
+import { JudgeAssignmentInfrastructureModule } from '../judge-assignments/infrastructure/infrastructure.module';
 import { JudgingCriteriaInfrastructureModule } from '../judging-criteria/infrastructure/infrastructure.module';
 
 @Module({
   imports: [
     ScoresInfrastructureModule,
     SubmissionsInfrastructureModule,
-    JudgeAssignmentsInfrastructureModule,
+    JudgeAssignmentInfrastructureModule,
     JudgingCriteriaInfrastructureModule,
   ],
   controllers: [ScoresController],

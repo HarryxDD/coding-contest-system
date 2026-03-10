@@ -9,9 +9,8 @@ describe('ScoresController', () => {
   let adminToken: string;
   let judgeToken: string;
   let participantToken: string;
-
-  // ids resolved from seeded and freshly created data
-  let springContestId: string;
+  let judgeId: string;
+  let assignedContestId: string;
   let unassignedContestId: string;
   let testTeamId: string;
   let testSubmissionId: string;
@@ -20,6 +19,13 @@ describe('ScoresController', () => {
   let createdScoreId: string;
 
   const randomSuffix = Math.floor(Math.random() * 100000);
+
+  const judge = {
+    username: `scorespec_j_${randomSuffix}`,
+    email: `scorespec_j_${randomSuffix}@example.com`,
+    password: 'password123',
+    role: 'judge',
+  };
 
   const participant = {
     username: `scorespec_p_${randomSuffix}`,
@@ -36,35 +42,45 @@ describe('ScoresController', () => {
     app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
     await app.init();
 
-    // login as seeded admin
     const adminRes = await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: 'admin@example.com', password: 'admin123' });
     adminToken = adminRes.body.token;
 
-    // login as seeded judge — already assigned to spring hackathon 2026 via seed
+    await request(app.getHttpServer())
+      .post('/users')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send(judge)
+      .expect(201);
+
     const judgeRes = await request(app.getHttpServer())
       .post('/auth/login')
-      .send({ email: 'judge@example.com', password: 'judge123' });
+      .send({ email: judge.email, password: judge.password });
     judgeToken = judgeRes.body.token;
+    judgeId = judgeRes.body.user.id;
 
-    // register and login fresh participant
-    await request(app.getHttpServer()).post('/auth/register').send(participant);
-    const pRes = await request(app.getHttpServer())
+    await request(app.getHttpServer())
+      .post('/auth/register')
+      .send(participant)
+      .expect(201);
+
+    const participantRes = await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: participant.email, password: participant.password });
-    participantToken = pRes.body.token;
+    participantToken = participantRes.body.token;
 
-    // find spring hackathon 2026 which has the seeded judge assignment and criteria
-    const contestsRes = await request(app.getHttpServer())
-      .get('/contests')
-      .set('Authorization', `Bearer ${adminToken}`);
-    const springHackathon = contestsRes.body.data.find(
-      (c: { name: string }) => c.name === 'Spring Hackathon 2026',
-    );
-    springContestId = springHackathon.id;
+    const assignedContestRes = await request(app.getHttpServer())
+      .post('/contests')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        name: `Score Spec Assigned Contest ${randomSuffix}`,
+        startDate: '2027-01-01T00:00:00.000Z',
+        endDate: '2027-12-31T00:00:00.000Z',
+        submissionDeadline: '2027-11-30T00:00:00.000Z',
+      })
+      .expect(201);
+    assignedContestId = assignedContestRes.body.id;
 
-    // create a second contest where the seeded judge is NOT assigned
     const unassignedContestRes = await request(app.getHttpServer())
       .post('/contests')
       .set('Authorization', `Bearer ${adminToken}`)
@@ -73,53 +89,71 @@ describe('ScoresController', () => {
         startDate: '2027-01-01T00:00:00.000Z',
         endDate: '2027-12-31T00:00:00.000Z',
         submissionDeadline: '2027-11-30T00:00:00.000Z',
-      });
+      })
+      .expect(201);
     unassignedContestId = unassignedContestRes.body.id;
 
-    // participant creates a team in spring hackathon so they can submit there
+    await request(app.getHttpServer())
+      .post('/judge-assignments')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        contestId: assignedContestId,
+        judgeId,
+      })
+      .expect(201);
+
+    const criteriaRes = await request(app.getHttpServer())
+      .post('/judging-criteria')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        contestId: assignedContestId,
+        name: `Score Spec Criteria ${randomSuffix}`,
+        description: 'Main judging criteria',
+        maxScore: 10,
+      })
+      .expect(201);
+    testCriteriaId = criteriaRes.body.id;
+
     const teamRes = await request(app.getHttpServer())
       .post('/teams')
       .set('Authorization', `Bearer ${participantToken}`)
-      .send({ name: `Score Spec Team ${randomSuffix}`, contestId: springContestId });
+      .send({
+        name: `Score Spec Team ${randomSuffix}`,
+        contestId: assignedContestId,
+      })
+      .expect(201);
     testTeamId = teamRes.body.id;
 
-    // participant creates a submission for that team in spring hackathon
     const submissionRes = await request(app.getHttpServer())
       .post('/submissions')
       .set('Authorization', `Bearer ${participantToken}`)
       .send({
         teamId: testTeamId,
-        contestId: springContestId,
+        contestId: assignedContestId,
         title: `Score Spec Submission ${randomSuffix}`,
-      });
+      })
+      .expect(201);
     testSubmissionId = submissionRes.body.id;
 
-    // participant creates a team in the unassigned contest for the 403 test
     const unassignedTeamRes = await request(app.getHttpServer())
       .post('/teams')
       .set('Authorization', `Bearer ${participantToken}`)
       .send({
         name: `Score Spec Unassigned Team ${randomSuffix}`,
         contestId: unassignedContestId,
-      });
-    const unassignedTeamId = unassignedTeamRes.body.id;
+      })
+      .expect(201);
 
-    // participant creates a submission in the unassigned contest
-    const unassignedSubRes = await request(app.getHttpServer())
+    const unassignedSubmissionRes = await request(app.getHttpServer())
       .post('/submissions')
       .set('Authorization', `Bearer ${participantToken}`)
       .send({
-        teamId: unassignedTeamId,
+        teamId: unassignedTeamRes.body.id,
         contestId: unassignedContestId,
         title: `Unassigned Contest Submission ${randomSuffix}`,
-      });
-    unassignedSubmissionId = unassignedSubRes.body.id;
-
-    // get the first available criteria for spring hackathon
-    const criteriaRes = await request(app.getHttpServer())
-      .get(`/judging-criteria?contestId=${springContestId}`)
-      .set('Authorization', `Bearer ${adminToken}`);
-    testCriteriaId = criteriaRes.body.data[0].id;
+      })
+      .expect(201);
+    unassignedSubmissionId = unassignedSubmissionRes.body.id;
   });
 
   afterAll(async () => {
@@ -127,7 +161,6 @@ describe('ScoresController', () => {
   });
 
   describe('POST /scores', () => {
-    // judge assigned to spring hackathon scores a fresh submission with valid criteria
     it('returns 201 with the created score when the judge is assigned to the contest', async () => {
       const response = await request(app.getHttpServer())
         .post('/scores')
@@ -144,11 +177,9 @@ describe('ScoresController', () => {
       expect(response.body.submissionId).toEqual(testSubmissionId);
       expect(response.body.score).toEqual(8);
 
-      // store for get and delete tests
       createdScoreId = response.body.id;
     });
 
-    // judge is not assigned to the unassigned contest — service should throw 403
     it('returns 403 when the judge is not assigned to the contest', () => {
       return request(app.getHttpServer())
         .post('/scores')
@@ -161,7 +192,6 @@ describe('ScoresController', () => {
         .expect(403);
     });
 
-    // score of 999 exceeds the max_score of 10 in the seeded criteria
     it('returns 400 when the score exceeds the criteria max_score', () => {
       return request(app.getHttpServer())
         .post('/scores')
@@ -174,7 +204,6 @@ describe('ScoresController', () => {
         .expect(400);
     });
 
-    // judge already scored this submission+criteria combo — duplicate returns 409
     it('returns 409 when the same judge scores the same submission and criteria twice', () => {
       return request(app.getHttpServer())
         .post('/scores')
@@ -189,7 +218,6 @@ describe('ScoresController', () => {
   });
 
   describe('GET /scores/:id', () => {
-    // happy path — score exists and data should come back as a domain object
     it('returns 200 with score data for a valid existing uuid', () => {
       return request(app.getHttpServer())
         .get(`/scores/${createdScoreId}`)
@@ -206,7 +234,6 @@ describe('ScoresController', () => {
   });
 
   describe('DELETE /scores/:id', () => {
-    // judge deletes their own score — should respond with 204 and empty body
     it('returns 204 with no body when the judge deletes their own score', async () => {
       const response = await request(app.getHttpServer())
         .delete(`/scores/${createdScoreId}`)
