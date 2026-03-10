@@ -2,7 +2,7 @@
 
 ## Meeting 1.
 * **DATE:** 06.02.2026, 9:55 - 10:20 AM
-* **PARTICIPANTS:** Vu Truong, Mubeen Khan, Eshmam Rayed, Muhammad Abdur Rehman
+* **PARTICIPANTS:** Vu Truong, Mubeen Khan, Eshmam Rayed
 * **TEACHER:** Iván Sánchez Milara
 
 ### Action points
