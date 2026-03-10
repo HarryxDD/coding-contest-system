@@ -31,5 +31,8 @@ export abstract class teamMemberRepository {
   // returns the member who joined first — treated as the team creator
   abstract findFirstMemberByTeamId(teamId: string): Promise<TeamMember | null>;
 
+  // returns all team memberships for a given user
+  abstract findByUserId(userId: string): Promise<TeamMember[]>;
+
   abstract remove(id: TeamMember['id']): Promise<void>;
 }

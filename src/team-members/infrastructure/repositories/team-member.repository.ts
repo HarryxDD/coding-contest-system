@@ -82,6 +82,14 @@ export class TeamMembersRelationalRepository implements teamMemberRepository {
     return entity ? TeamMemberMapper.toDomain(entity) : null;
   }
 
+  async findByUserId(userId: string): Promise<TeamMember[]> {
+    const entities = await this.teamMembersRepository.find({
+      where: { userId },
+      order: { joinedAt: 'ASC' },
+    });
+    return entities.map((member) => TeamMemberMapper.toDomain(member));
+  }
+
   async remove(id: TeamMember['id']): Promise<void> {
     await this.teamMembersRepository.delete(id);
   }
