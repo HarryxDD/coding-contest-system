@@ -1,17 +1,15 @@
-export const judgeAssignmentRepository = Symbol('JudgeAssignmentRepository');
-
-export interface IJudgeAssignmentRepository {
-  create(data: any): Promise<any>;
-  findAll(): Promise<any[]>;
-  findById(id: string): Promise<any | null>;
-  findByContestId(contestId: string): Promise<any[]>;
-  findByJudgeId(judgeId: string): Promise<any[]>;
-  findByContestAndJudge(contestId: string, judgeId: string): Promise<any | null>;
-  remove(id: string): Promise<void>;
-  findManyWithPagination(options: {
+export abstract class judgeAssignmentRepository {
+  abstract create(data: any): Promise<any>;
+  abstract findAll(): Promise<any[]>;
+  abstract findById(id: string): Promise<any | null>;
+  abstract findByContestId(contestId: string): Promise<any[]>;
+  abstract findByJudgeId(judgeId: string): Promise<any[]>;
+  abstract findByContestAndJudge(contestId: string, judgeId: string): Promise<any | null>;
+  abstract remove(id: string): Promise<void>;
+  abstract findManyWithPagination(options: {
     contestId?: string;
     judgeId?: string;
     paginationOptions: any;
   }): Promise<any[]>;
-  countByContestId(contestId: string): Promise<number>;
+  abstract countByContestId(contestId: string): Promise<number>;
 }
