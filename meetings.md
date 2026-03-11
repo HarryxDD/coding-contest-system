@@ -38,6 +38,12 @@
 
 ### Notes
 *Add here notes that you consider important. This is not mandatory*
+check resource hierarchy (tree diagram):
+- /teams/<team-id>/members POST
+- teams and team member should be together
+- contests/:id/assignments -> don't need another resource for judge assignments
+- provide a link with good practices on NestJS
+- document (utils)
 
 
 ## Meeting 4.
