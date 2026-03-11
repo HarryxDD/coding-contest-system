@@ -47,6 +47,13 @@ export class TeamsService {
   async findOne(id: string) {
     const team = await this.teamRepo.findById(id);
     if (!team) throw new NotFoundException('Team not found');
+
+    const members = await this.teamMemberRepo.findByTeamId(id);
+    team.members = members.map((member) => ({
+      id: member.id,
+      userId: member.userId,
+      joinedAt: member.joinedAt,
+    }));
     return team;
   }
 
