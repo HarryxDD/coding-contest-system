@@ -1,4 +1,4 @@
-import { INestApplication } from "@nestjs/common"
+import { INestApplication, ValidationPipe } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing";
 import { AppModule } from "../app.module";
 import request from 'supertest';
@@ -12,6 +12,7 @@ describe('AuthController', () => {
         }).compile();
 
         app = moduleFixture.createNestApplication();
+        app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 
         await app.init()
     })
@@ -50,5 +51,16 @@ describe('AuthController', () => {
                 expect(response.body).toHaveProperty('token');
                 expect(response.body).toHaveProperty('user');
             });
+    });
+
+    it('/auth/register rejects invalid email (POST)', () => {
+        return request(app.getHttpServer())
+            .post('/auth/register')
+            .send({
+                username: `user${randomSuffix}`,
+                email: 'userexample.com',
+                password: 'user123',
+            })
+            .expect(400);
     });
 })
