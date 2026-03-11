@@ -82,6 +82,14 @@ export class TeamMembersRelationalRepository implements teamMemberRepository {
     return entity ? TeamMemberMapper.toDomain(entity) : null;
   }
 
+  async findByTeamId(teamId: string): Promise<TeamMember[]> {
+    const entities = await this.teamMembersRepository.find({
+      where: { teamId },
+      order: { joinedAt: 'ASC' },
+    });
+    return entities.map((member) => TeamMemberMapper.toDomain(member));
+  }
+
   async findByUserId(userId: string): Promise<TeamMember[]> {
     const entities = await this.teamMembersRepository.find({
       where: { userId },

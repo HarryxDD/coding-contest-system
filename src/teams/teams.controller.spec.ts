@@ -148,6 +148,13 @@ describe('TeamsController', () => {
           expect(response.body).toHaveProperty('name');
           expect(response.body).toHaveProperty('contestId');
           expect(response.body).toHaveProperty('createdAt');
+          expect(response.body).toHaveProperty('members');
+          expect(Array.isArray(response.body.members)).toBeTruthy();
+          expect(response.body.members).toHaveLength(1);
+          expect(response.body.members[0]).toHaveProperty('id');
+          expect(response.body.members[0]).toHaveProperty('userId');
+          expect(response.body.members[0]).toHaveProperty('joinedAt');
+          expect(response.body.members[0]).not.toHaveProperty('teamId');
         });
     });
 
