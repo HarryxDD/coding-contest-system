@@ -73,9 +73,9 @@ export class JudgeAssignmentsController {
   @Delete(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER)
   @ApiOperation({})
-  @ApiResponse({ status: 200, description: 'Judge assignment removed successfully' })
+  @ApiResponse({ status: 204, description: 'Judge assignment removed successfully' })
   @ApiResponse({ status: 404, description: 'Judge assignment not found' })
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string) {
     return this.judgeAssignmentsService.remove(id);
   }

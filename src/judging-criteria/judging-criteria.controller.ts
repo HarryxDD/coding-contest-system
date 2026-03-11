@@ -78,9 +78,9 @@ export class JudgingCriteriaController {
   @Delete(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER)
   @ApiOperation({})
-  @ApiResponse({ status: 200, description: 'Judging criteria deleted successfully' })
+  @ApiResponse({ status: 204, description: 'Judging criteria deleted successfully' })
   @ApiResponse({ status: 404, description: 'Judging criteria not found' })
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string) {
     return this.judgingCriteriaService.remove(id);
   }

@@ -56,7 +56,6 @@ export class JudgeAssignmentsService {
     }
 
     await this.repository.remove(id);
-    return { message: 'Judge assignment deleted successfully' };
   }
 
   async findManyWithPagination(queryDto: QueryJudgeAssignmentDto) {

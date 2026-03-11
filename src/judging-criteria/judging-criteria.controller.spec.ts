@@ -38,7 +38,7 @@ import { Repository } from 'typeorm';
  * DELETE /judging-criteria/:id - Delete criteria
  * Reject unauthenticated requests (401)
  * Block judges from deleting criteria (403)
- * Allow organizers to delete criteria (200) [depends on creation]
+ * Allow organizers to delete criteria (204) [depends on creation]
  * Return 404 for non-existent criteria
  *
  * GET /judging-criteria/contest/:contestId - Get criteria for contest
@@ -356,9 +356,9 @@ describe('JudgingCriteriaController (e2e)', () => {
       const response = await request(app.getHttpServer())
         .delete(`/judging-criteria/${deleteTestCriteriaId}`)
         .set('Authorization', `Bearer ${organizerToken}`)
-        .expect(200);
+        .expect(204);
 
-      expect(response.body).toHaveProperty('message');
+      expect(response.body).toEqual({});
     });
 
     it('should return 404 when deleting non-existent criteria', () => {

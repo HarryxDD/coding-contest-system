@@ -61,7 +61,6 @@ export class JudgingCriteriaService {
     }
 
     await this.repository.remove(id);
-    return { message: 'Judging criteria deleted successfully' };
   }
 
   async findManyWithPagination(queryDto: QueryJudgingCriteriaDto) {

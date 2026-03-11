@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Request, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../roles/roles.guard';
@@ -57,6 +57,7 @@ export class ContestsController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(RoleEnum.ORGANIZER, RoleEnum.ADMIN)
     @Delete(':id')
+    @HttpCode(HttpStatus.NO_CONTENT)
     remove(@Param('id') id: string, @Request() req) {
         const isAdmin = req.user.role === RoleEnum.ADMIN;
 

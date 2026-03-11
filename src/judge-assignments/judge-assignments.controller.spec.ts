@@ -39,7 +39,7 @@ import { Repository } from 'typeorm';
  * DELETE /judge-assignments/:id - Delete assignment
  * Reject unauthenticated requests (401)
  * Block judges from deleting assignments (403)
- * Allow organizers to delete assignments (200) [depends on POST working]
+ * Allow organizers to delete assignments (204) [depends on POST working]
  * Return 404 for non-existent assignment (404)
  *
  * GET /judge-assignments/contest/:contestId - Get judges for contest
