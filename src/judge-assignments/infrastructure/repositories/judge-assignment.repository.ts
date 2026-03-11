@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOptionsWhere } from 'typeorm';
 import { JudgeAssignmentEntity } from '../entities/judge-assignment.entity';
-import { judgeAssignmentRepository, IJudgeAssignmentRepository } from '../judge-assignment.repository';
+import { judgeAssignmentRepository } from '../judge-assignment.repository';
 import { IPaginationOptions } from '@/utils/types/pagination-options';
 
 @Injectable()
-export class JudgeAssignmentRelationalRepository implements IJudgeAssignmentRepository {
+export class JudgeAssignmentRelationalRepository implements judgeAssignmentRepository {
   constructor(
     @InjectRepository(JudgeAssignmentEntity)
     private readonly repository: Repository<JudgeAssignmentEntity>,

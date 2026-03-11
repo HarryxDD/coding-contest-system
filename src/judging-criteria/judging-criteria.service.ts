@@ -1,5 +1,5 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
-import { judgingCriteriaRepository, IJudgingCriteriaRepository } from './infrastructure/judging-criteria.repository';
+import { judgingCriteriaRepository } from './infrastructure/judging-criteria.repository';
 import { CreateJudgingCriteriaDto } from './dto/create-judging-criteria.dto';
 import { UpdateJudgingCriteriaDto } from './dto/update-judging-criteria.dto';
 import { QueryJudgingCriteriaDto } from './dto/query-judging-criteria.dto';
@@ -7,8 +7,7 @@ import { QueryJudgingCriteriaDto } from './dto/query-judging-criteria.dto';
 @Injectable()
 export class JudgingCriteriaService {
   constructor(
-    @Inject(judgingCriteriaRepository)
-    private readonly repository: IJudgingCriteriaRepository,
+    private readonly repository: judgingCriteriaRepository,
   ) {}
 
   async create(dto: CreateJudgingCriteriaDto) {
