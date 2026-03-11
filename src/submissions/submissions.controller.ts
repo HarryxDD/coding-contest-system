@@ -41,7 +41,8 @@ export class SubmissionsController {
     @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
     @Post()
     create(@Body() createSubmissionDto: CreateSubmissionDto, @Request() req) {
-        return this.submissionsService.create(createSubmissionDto, req.user.id);
+        const isAdmin = req.user.role === RoleEnum.ADMIN;
+        return this.submissionsService.create(createSubmissionDto, req.user.id, isAdmin);
     }
 
     @ApiBearerAuth()
