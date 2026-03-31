@@ -9,6 +9,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -41,7 +42,7 @@ export class JudgeAssignmentsController {
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE)
   @ApiOperation({})
   @ApiResponse({ status: 200, description: 'List of judges assigned to the contest' })
-  findByContest(@Param('contestId') contestId: string) {
+  findByContest(@Param('contestId', ParseUUIDPipe) contestId: string) {
     return this.judgeAssignmentsService.findByContest(contestId);
   }
 
@@ -49,7 +50,7 @@ export class JudgeAssignmentsController {
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE)
   @ApiOperation({})
   @ApiResponse({ status: 200, description: 'List of contests the judge is assigned to' })
-  findByJudge(@Param('judgeId') judgeId: string) {
+  findByJudge(@Param('judgeId', ParseUUIDPipe) judgeId: string) {
     return this.judgeAssignmentsService.findByJudge(judgeId);
   }
 
@@ -66,7 +67,7 @@ export class JudgeAssignmentsController {
   @ApiOperation({})
   @ApiResponse({ status: 200, description: 'Judge assignment found' })
   @ApiResponse({ status: 404, description: 'Judge assignment not found' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.judgeAssignmentsService.findOne(id);
   }
 
@@ -76,7 +77,7 @@ export class JudgeAssignmentsController {
   @ApiResponse({ status: 204, description: 'Judge assignment removed successfully' })
   @ApiResponse({ status: 404, description: 'Judge assignment not found' })
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.judgeAssignmentsService.remove(id);
   }
 }

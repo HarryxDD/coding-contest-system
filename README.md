@@ -206,6 +206,30 @@ npm run test
 
 The project uses Jest and Supertest for API-level tests.
 
+## NestJS Best Practices
+
+This project follows key NestJS architectural principles:
+
+### Official Documentation
+
+Refer to the official NestJS documentation for comprehensive guidance on architecture and development patterns:
+
+- NestJS Official Documentation - https://docs.nestjs.com/
+- NestJS Fundamentals - https://docs.nestjs.com/first-steps
+- Modules and Dependency Injection - https://docs.nestjs.com/modules
+- Pipes and Validation - https://docs.nestjs.com/pipes
+- Guards and Authorization - https://docs.nestjs.com/guards
+- Database Integration - https://docs.nestjs.com/techniques/database
+
+### Implementation in This Project
+
+1. Modular Architecture - Feature modules for users, contests, teams, etc. with clear separation
+2. Dependency Injection - Services managed by NestJS DI container
+3. Guards and Decorators - JWT authentication and role-based access control
+4. Pipe Validation - ValidationPipe for DTOs and ParseUUIDPipe for URL parameters
+5. Comprehensive Testing - E2E tests with Supertest for full request/response cycles
+6. API Documentation - Swagger/OpenAPI integration
+
 ## Notes
 
 - This repository contains a Docker Compose file, so Docker support is available as an option.

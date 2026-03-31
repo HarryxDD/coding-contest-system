@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Request, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Request, HttpCode, HttpStatus, ParseUUIDPipe } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../roles/roles.guard';
@@ -32,7 +32,7 @@ export class SubmissionsController {
     @ApiBearerAuth()
     @UseGuards(AuthGuard('jwt'))
     @Get(':id')
-    findOne(@Param('id') id: string) {
+    findOne(@Param('id', ParseUUIDPipe) id: string) {
         return this.submissionsService.findOne(id);
     }
 
@@ -49,7 +49,7 @@ export class SubmissionsController {
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
     @Patch(':id')
-    update(@Param('id') id: string, @Body() updateSubmissionDto: UpdateSubmissionDto, @Request() req) {
+    update(@Param('id', ParseUUIDPipe) id: string, @Body() updateSubmissionDto: UpdateSubmissionDto, @Request() req) {
         const isAdmin = req.user.role === RoleEnum.ADMIN;
         return this.submissionsService.update(id, updateSubmissionDto, req.user.id, isAdmin);
     }
@@ -59,7 +59,7 @@ export class SubmissionsController {
     @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
-    remove(@Param('id') id: string, @Request() req) {
+    remove(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
         const isAdmin = req.user.role === RoleEnum.ADMIN;
         return this.submissionsService.remove(id, req.user.id, isAdmin);
     }

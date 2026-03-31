@@ -10,6 +10,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -42,7 +43,7 @@ export class JudgingCriteriaController {
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE, RoleEnum.PARTICIPANT)
   @ApiOperation({})
   @ApiResponse({ status: 200, description: 'List of judging criteria for the contest' })
-  findByContest(@Param('contestId') contestId: string) {
+  findByContest(@Param('contestId', ParseUUIDPipe) contestId: string) {
     return this.judgingCriteriaService.findByContest(contestId);
   }
 
@@ -59,7 +60,7 @@ export class JudgingCriteriaController {
   @ApiOperation({})
   @ApiResponse({ status: 200, description: 'Judging criteria found' })
   @ApiResponse({ status: 404, description: 'Judging criteria not found' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.judgingCriteriaService.findOne(id);
   }
 
@@ -69,7 +70,7 @@ export class JudgingCriteriaController {
   @ApiResponse({ status: 200, description: 'Judging criteria updated successfully' })
   @ApiResponse({ status: 404, description: 'Judging criteria not found' })
   update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateJudgingCriteriaDto: UpdateJudgingCriteriaDto,
   ) {
     return this.judgingCriteriaService.update(id, updateJudgingCriteriaDto);
@@ -81,7 +82,7 @@ export class JudgingCriteriaController {
   @ApiResponse({ status: 204, description: 'Judging criteria deleted successfully' })
   @ApiResponse({ status: 404, description: 'Judging criteria not found' })
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.judgingCriteriaService.remove(id);
   }
 }

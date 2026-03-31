@@ -1,5 +1,5 @@
 import { RolesGuard } from "@/roles/roles.guard";
-import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Request, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query, Request, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { UsersService } from "./users.service";
@@ -48,12 +48,12 @@ export class UsersController {
     }
 
     @Get(':id')
-    findOne(@Param('id') id: string) {
+    findOne(@Param('id', ParseUUIDPipe) id: string) {
         return this.usersService.findOne(id);
     }
 
     @Patch(':id')
-    update(@Param('id') id: string, @Body() updateDto: UpdateUserDto, @Request() req) {
+    update(@Param('id', ParseUUIDPipe) id: string, @Body() updateDto: UpdateUserDto, @Request() req) {
         if (req.user.role !== RoleEnum.ADMIN && req.user.id !== id) {
             throw new ForbiddenException('You can only update your own profile');
         }
@@ -64,7 +64,7 @@ export class UsersController {
     @Roles(RoleEnum.ADMIN)
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
-    remove(@Param('id') id: string) {
+    remove(@Param('id', ParseUUIDPipe) id: string) {
         return this.usersService.remove(id);
     }
 }
