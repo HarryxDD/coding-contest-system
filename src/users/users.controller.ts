@@ -1,10 +1,10 @@
 import { RolesGuard } from "@/roles/roles.guard";
 import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Request, UseGuards } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { UsersService } from "./users.service";
 import { RoleEnum } from "@/roles/roles.enum";
 import { Roles } from "@/roles/roles.decorator";
+import { JwtOrPatAuthGuard } from "@/auth/jwt-or-pat-auth.guard";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { QueryUserDto } from "./dto/query-user.dto";
@@ -13,7 +13,7 @@ import { User } from "./domain/user";
 import { infinityPagination } from "@/utils/infinity-pagination";
 
 @ApiBearerAuth() // Require token
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtOrPatAuthGuard, RolesGuard)
 @ApiTags('Useres')
 @Controller('users')
 export class UsersController {

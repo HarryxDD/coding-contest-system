@@ -10,8 +10,8 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { JudgeAssignmentsService } from './judge-assignments.service';
 import { RolesGuard } from '@/roles/roles.guard';
 import { Roles } from '@/roles/roles.decorator';
@@ -20,7 +20,7 @@ import { CreateJudgeAssignmentDto } from './dto/create-judge-assignment.dto';
 import { QueryJudgeAssignmentDto } from './dto/query-judge-assignment.dto';
 
 @ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtOrPatAuthGuard, RolesGuard)
 @ApiTags('Judge Assignments')
 @Controller('judge-assignments')
 export class JudgeAssignmentsController {
@@ -80,3 +80,4 @@ export class JudgeAssignmentsController {
     return this.judgeAssignmentsService.remove(id);
   }
 }
+

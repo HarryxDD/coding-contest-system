@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Request, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { RolesGuard } from '../roles/roles.guard';
 import { Roles } from '../roles/roles.decorator';
 import { RoleEnum } from '../roles/roles.enum';
@@ -18,7 +18,7 @@ export class ContestsController {
     constructor(private readonly contestsService: ContestsService) { }
 
     @ApiBearerAuth()
-    @UseGuards(AuthGuard('jwt'))
+    @UseGuards(JwtOrPatAuthGuard)
     @Get()
     async findAll(@Query() query: QueryContestDto): Promise<InfinityPaginationResponseDto<Contest>> {
         const page = query?.page ?? 1;
@@ -35,7 +35,7 @@ export class ContestsController {
     }
 
     @ApiBearerAuth()
-    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @UseGuards(JwtOrPatAuthGuard, RolesGuard)
     @Roles(RoleEnum.ORGANIZER, RoleEnum.ADMIN)
     @Post()
     create(@Body() createContestDto: CreateContestDto, @Request() req) {
@@ -44,7 +44,7 @@ export class ContestsController {
     }
 
     @ApiBearerAuth()
-    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @UseGuards(JwtOrPatAuthGuard, RolesGuard)
     @Roles(RoleEnum.ORGANIZER, RoleEnum.ADMIN)
     @Patch(':id')
     update(@Param('id') id: string, @Body() updateContestDto: UpdateContestDto, @Request() req) {
@@ -54,7 +54,7 @@ export class ContestsController {
     }
 
     @ApiBearerAuth()
-    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @UseGuards(JwtOrPatAuthGuard, RolesGuard)
     @Roles(RoleEnum.ORGANIZER, RoleEnum.ADMIN)
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
@@ -64,3 +64,4 @@ export class ContestsController {
         return this.contestsService.remove(id, req.user.id, isAdmin);
     }
 }
+
