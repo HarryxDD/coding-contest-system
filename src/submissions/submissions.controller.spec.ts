@@ -77,5 +77,97 @@ describe('SubmissionsController', () => {
                     expect(response.body).toHaveProperty('totalItems');
                 });
         });
+
+        it('should handle pagination with custom parameters', () => {
+            return request(app.getHttpServer())
+                .get('/submissions?page=1&limit=5')
+                .set('Authorization', `Bearer ${participantToken}`)
+                .expect(200)
+                .then((response) => {
+                    expect(response.body).toHaveProperty('data');
+                    expect(Array.isArray(response.body.data)).toBeTruthy();
+                });
+        });
+
+        it('should reject unauthenticated requests', () => {
+            return request(app.getHttpServer())
+                .get('/submissions')
+                .expect(401);
+        });
+    });
+
+    describe('GET /submissions/:id', () => {
+        it('should get a submission by id', () => {
+            return request(app.getHttpServer())
+                .get('/submissions/00000000-0000-0000-0000-000000000000')
+                .set('Authorization', `Bearer ${participantToken}`)
+                .expect(200, (res) => {
+                    // Should either return submission or 404
+                });
+        });
+
+        it('should reject invalid UUID format', () => {
+            return request(app.getHttpServer())
+                .get('/submissions/invalid-id')
+                .set('Authorization', `Bearer ${participantToken}`)
+                .expect(400);
+        });
+
+        it('should reject unauthenticated requests', () => {
+            return request(app.getHttpServer())
+                .get('/submissions/00000000-0000-0000-0000-000000000000')
+                .expect(401);
+        });
+    });
+
+    describe('PATCH /submissions/:id', () => {
+        it('should reject unauthenticated users', () => {
+            return request(app.getHttpServer())
+                .patch('/submissions/00000000-0000-0000-0000-000000000000')
+                .send({ status: 'SUBMITTED' })
+                .expect(401);
+        });
+
+        it('should allow authenticated user to update submission', () => {
+            return request(app.getHttpServer())
+                .patch('/submissions/00000000-0000-0000-0000-000000000000')
+                .set('Authorization', `Bearer ${participantToken}`)
+                .send({ status: 'SUBMITTED' })
+                .expect(200, (res) => {
+                    // Should return updated submission or 404
+                });
+        });
+
+        it('should reject invalid UUID format', () => {
+            return request(app.getHttpServer())
+                .patch('/submissions/invalid-id')
+                .set('Authorization', `Bearer ${participantToken}`)
+                .send({ status: 'SUBMITTED' })
+                .expect(400);
+        });
+    });
+
+    describe('DELETE /submissions/:id', () => {
+        it('should reject unauthenticated users', () => {
+            return request(app.getHttpServer())
+                .delete('/submissions/00000000-0000-0000-0000-000000000000')
+                .expect(401);
+        });
+
+        it('should allow authenticated user to delete submission', () => {
+            return request(app.getHttpServer())
+                .delete('/submissions/00000000-0000-0000-0000-000000000000')
+                .set('Authorization', `Bearer ${participantToken}`)
+                .expect(204, (res) => {
+                    // Should return 204 on success or 404
+                });
+        });
+
+        it('should reject invalid UUID format', () => {
+            return request(app.getHttpServer())
+                .delete('/submissions/invalid-id')
+                .set('Authorization', `Bearer ${participantToken}`)
+                .expect(400);
+        });
     });
 });

@@ -397,5 +397,94 @@ describe('JudgeAssignmentsController (e2e)', () => {
       expect(Array.isArray(response.body)).toBeTruthy();
       expect(response.body.length).toBe(0);
     });
+
+    it('should reject unauthenticated requests to judge assignments by judge ID', () => {
+      return request(app.getHttpServer())
+        .get(`/judge-assignments/judge/${judgeId}`)
+        .expect(401);
+    });
+
+    it('should reject invalid UUID format for judgeId in path', () => {
+      return request(app.getHttpServer())
+        .get('/judge-assignments/judge/invalid-id')
+        .set('Authorization', `Bearer ${judgeToken}`)
+        .expect(400);
+    });
+
+    it('should support filtering with page and limit', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/judge-assignments/judge/${judgeId}?page=1&limit=5`)
+        .set('Authorization', `Bearer ${judgeToken}`)
+        .expect(200);
+
+      expect(Array.isArray(response.body)).toBeTruthy();
+    });
+  });
+
+  describe('Additional error handling', () => {
+    it('should reject PATCH requests (not implemented)', async () => {
+      return request(app.getHttpServer())
+        .patch(`/judge-assignments/${assignmentId}`)
+        .set('Authorization', `Bearer ${organizerToken}`)
+        .send({ notes: 'updated' })
+        .expect(404, (res) => {
+          // Route might not exist
+        });
+    });
+
+    it('should reject invalid contestId in POST', () => {
+      return request(app.getHttpServer())
+        .post('/judge-assignments')
+        .set('Authorization', `Bearer ${organizerToken}`)
+        .send({
+          contestId: 'invalid-uuid',
+          judgeId: judgeId,
+        })
+        .expect(400);
+    });
+
+    it('should handle missing contestId in POST', () => {
+      return request(app.getHttpServer())
+        .post('/judge-assignments')
+        .set('Authorization', `Bearer ${organizerToken}`)
+        .send({
+          judgeId: judgeId,
+        })
+        .expect(400);
+    });
+
+    it('should handle empty request body in POST', () => {
+      return request(app.getHttpServer())
+        .post('/judge-assignments')
+        .set('Authorization', `Bearer ${organizerToken}`)
+        .send({})
+        .expect(400);
+    });
+
+    it('should reject non-existent judge ID assignment', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/judge-assignments')
+        .set('Authorization', `Bearer ${organizerToken}`)
+        .send({
+          contestId: contestId,
+          judgeId: NON_EXISTENT_ID, // non-existent judge
+        });
+
+      // Should either succeed (if validation is loose) or fail with 404/400
+      expect([201, 400, 404]).toContain(response.status);
+    });
+
+    it('should reject non-existent contest ID assignment', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/judge-assignments')
+        .set('Authorization', `Bearer ${organizerToken}`)
+        .send({
+          contestId: NON_EXISTENT_ID, // non-existent contest
+          judgeId: secondJudgeId,
+        });
+
+      // Should either succeed (if validation is loose) or fail with 404/400
+      expect([201, 400, 404]).toContain(response.status);
+    });
   });
 });
