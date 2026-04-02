@@ -14,7 +14,7 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { RolesGuard } from '../roles/roles.guard';
 import { Roles } from '../roles/roles.decorator';
 import { RoleEnum } from '../roles/roles.enum';
@@ -28,7 +28,7 @@ import { Score } from './domain/score';
 
 @ApiTags('Scores')
 @ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(JwtOrPatAuthGuard)
 @Controller('scores')
 export class ScoresController {
   constructor(private readonly scoresService: ScoresService) {}
@@ -77,3 +77,4 @@ export class ScoresController {
     return this.scoresService.remove(id, req.user.id, req.user.role);
   }
 }
+

@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Request, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { RolesGuard } from '../roles/roles.guard';
 import { Roles } from '../roles/roles.decorator';
 import { RoleEnum } from '../roles/roles.enum';
@@ -18,7 +18,7 @@ export class SubmissionsController {
     constructor(private readonly submissionsService: SubmissionsService) { }
 
     @ApiBearerAuth()
-    @UseGuards(AuthGuard('jwt'))
+    @UseGuards(JwtOrPatAuthGuard)
     @Get()
     async findAll(@Query() query: QuerySubmissionDto): Promise<InfinityPaginationResponseDto<Submission>> {
         const page = query?.page ?? 1;
@@ -30,14 +30,14 @@ export class SubmissionsController {
     }
 
     @ApiBearerAuth()
-    @UseGuards(AuthGuard('jwt'))
+    @UseGuards(JwtOrPatAuthGuard)
     @Get(':id')
     findOne(@Param('id') id: string) {
         return this.submissionsService.findOne(id);
     }
 
     @ApiBearerAuth()
-    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @UseGuards(JwtOrPatAuthGuard, RolesGuard)
     @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
     @Post()
     create(@Body() createSubmissionDto: CreateSubmissionDto, @Request() req) {
@@ -46,7 +46,7 @@ export class SubmissionsController {
     }
 
     @ApiBearerAuth()
-    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @UseGuards(JwtOrPatAuthGuard, RolesGuard)
     @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
     @Patch(':id')
     update(@Param('id') id: string, @Body() updateSubmissionDto: UpdateSubmissionDto, @Request() req) {
@@ -55,7 +55,7 @@ export class SubmissionsController {
     }
 
     @ApiBearerAuth()
-    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @UseGuards(JwtOrPatAuthGuard, RolesGuard)
     @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
@@ -64,3 +64,4 @@ export class SubmissionsController {
         return this.submissionsService.remove(id, req.user.id, isAdmin);
     }
 }
+

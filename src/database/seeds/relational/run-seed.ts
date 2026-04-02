@@ -8,11 +8,13 @@ import { TeamMemberSeedService } from './team-member/team-member-seed.service';
 import { SubmissionSeedService } from './submission/submission-seed.service';
 import { JudgeAssignmentSeedService } from './judge-assignment/judge-assignment-seed.service';
 import { ScoreSeedService } from './score/score-seed.service';
+import { PersonalAccessTokenSeedService } from './personal-access-token/personal-access-token-seed.service';
 
 const runSeed = async () => {
   const app = await NestFactory.create(SeedModule);
 
   await app.get(UserSeedService).run();
+  await app.get(PersonalAccessTokenSeedService).run();
   await app.get(ContestSeedService).run();
   await app.get(JudgingCriteriaSeedService).run();
   await app.get(TeamSeedService).run();

@@ -11,8 +11,8 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { JudgingCriteriaService } from './judging-criteria.service';
 import { RolesGuard } from '@/roles/roles.guard';
 import { Roles } from '@/roles/roles.decorator';
@@ -22,7 +22,7 @@ import { UpdateJudgingCriteriaDto } from './dto/update-judging-criteria.dto';
 import { QueryJudgingCriteriaDto } from './dto/query-judging-criteria.dto';
 
 @ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtOrPatAuthGuard, RolesGuard)
 @ApiTags('Judging Criteria')
 @Controller('judging-criteria')
 export class JudgingCriteriaController {
@@ -85,3 +85,4 @@ export class JudgingCriteriaController {
     return this.judgingCriteriaService.remove(id);
   }
 }
+
