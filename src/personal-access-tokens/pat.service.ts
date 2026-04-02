@@ -13,6 +13,11 @@ export class PatService {
     private readonly patRepository: Repository<PersonalAccessTokenEntity>,
   ) {}
 
+  /**
+   * returns allowed scopes for a role
+   * @param role - the role to resolve scopes for
+   * @returns the allowed permission scopes
+   */
   allowedScopesForRole(role: RoleEnum): Set<string> {
     if (role === RoleEnum.ADMIN) return new Set(['*']);
 
@@ -51,6 +56,12 @@ export class PatService {
     ]);
   }
 
+  /**
+   * creates a personal access token for a user
+   * @param params - the token creation settings
+   * @returns the raw token and saved token record
+   * @throws ForbiddenException - when the requested permissions are not allowed for the role
+   */
   async createForUser(params: {
     userId: string;
     role: RoleEnum;
@@ -86,6 +97,11 @@ export class PatService {
     return { token: rawToken, record };
   }
 
+  /**
+   * returns personal access tokens for a user
+   * @param userId - the user id
+   * @returns the user's token records
+   */
   async listForUser(userId: string): Promise<PersonalAccessTokenEntity[]> {
     return this.patRepository.find({
       where: { userId },
@@ -93,6 +109,12 @@ export class PatService {
     });
   }
 
+  /**
+   * revokes a personal access token for a user
+   * @param params - the revoke request details
+   * @returns nothing
+   * @throws ForbiddenException - when the requester is not the token owner or an admin
+   */
   async revokeForUser(params: {
     tokenId: string;
     requesterUserId: string;
@@ -110,6 +132,12 @@ export class PatService {
     await this.patRepository.update(token.id, { enabled: false });
   }
 
+  /**
+   * validates a raw personal access token
+   * @param rawToken - the raw token value
+   * @returns the matching token record
+   * @throws UnauthorizedException - when the token is missing, invalid, or expired
+   */
   async validateRawToken(rawToken: string): Promise<PersonalAccessTokenEntity> {
     if (!rawToken) {
       throw new UnauthorizedException('Missing token');

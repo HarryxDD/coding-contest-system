@@ -31,6 +31,11 @@ import { Team } from './domain/team';
 export class TeamsController {
   constructor(private readonly teamsService: TeamsService) {}
 
+  /**
+   * returns paginated teams
+   * @param query - the pagination and filter options
+   * @returns the paginated team list
+   */
   @ApiBearerAuth()
   @UseGuards(JwtOrPatAuthGuard)
   @Get()
@@ -45,11 +50,22 @@ export class TeamsController {
     return infinityPagination(data, { page, limit });
   }
 
+  /**
+   * returns a team by id
+   * @param id - the team id
+   * @returns the matching team
+   */
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.teamsService.findOne(id);
   }
 
+  /**
+   * creates a team for the authenticated user
+   * @param createTeamDto - the team details to create
+   * @param req - the authenticated request
+   * @returns the created team
+   */
   @ApiBearerAuth()
   @UseGuards(JwtOrPatAuthGuard, RolesGuard)
   @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
@@ -59,6 +75,13 @@ export class TeamsController {
     return this.teamsService.create(createTeamDto, req.user.id);
   }
 
+  /**
+   * updates a team by id
+   * @param id - the team id
+   * @param updateTeamDto - the fields to update
+   * @param req - the authenticated request
+   * @returns the updated team
+   */
   @ApiBearerAuth()
   @UseGuards(JwtOrPatAuthGuard)
   @Patch(':id')
@@ -71,6 +94,12 @@ export class TeamsController {
     return this.teamsService.update(id, updateTeamDto, req.user.id, isAdmin);
   }
 
+  /**
+   * removes a team by id
+   * @param id - the team id
+   * @param req - the authenticated request
+   * @returns nothing
+   */
   @ApiBearerAuth()
   @UseGuards(JwtOrPatAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)

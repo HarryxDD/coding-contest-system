@@ -17,6 +17,11 @@ import { Contest } from './domain/contest';
 export class ContestsController {
     constructor(private readonly contestsService: ContestsService) { }
 
+    /**
+     * returns paginated contests
+     * @param query - the pagination and filter options
+     * @returns the paginated contest list
+     */
     @ApiBearerAuth()
     @UseGuards(JwtOrPatAuthGuard)
     @Get()
@@ -29,11 +34,22 @@ export class ContestsController {
         return infinityPagination(data, { page, limit });
     }
 
+    /**
+     * returns a contest by id
+     * @param id - the contest id
+     * @returns the matching contest
+     */
     @Get(':id')
     findOne(@Param('id') id: string) {
         return this.contestsService.findOne(id);
     }
 
+    /**
+     * creates a contest for the authenticated organizer
+     * @param createContestDto - the contest details to create
+     * @param req - the authenticated request
+     * @returns the created contest
+     */
     @ApiBearerAuth()
     @UseGuards(JwtOrPatAuthGuard, RolesGuard)
     @Roles(RoleEnum.ORGANIZER, RoleEnum.ADMIN)
@@ -43,6 +59,13 @@ export class ContestsController {
         return this.contestsService.create(createContestDto, req.user.id);
     }
 
+    /**
+     * updates a contest by id
+     * @param id - the contest id
+     * @param updateContestDto - the fields to update
+     * @param req - the authenticated request
+     * @returns the updated contest
+     */
     @ApiBearerAuth()
     @UseGuards(JwtOrPatAuthGuard, RolesGuard)
     @Roles(RoleEnum.ORGANIZER, RoleEnum.ADMIN)
@@ -53,6 +76,12 @@ export class ContestsController {
         return this.contestsService.update(id, updateContestDto, req.user.id, isAdmin);
     }
 
+    /**
+     * removes a contest by id
+     * @param id - the contest id
+     * @param req - the authenticated request
+     * @returns nothing
+     */
     @ApiBearerAuth()
     @UseGuards(JwtOrPatAuthGuard, RolesGuard)
     @Roles(RoleEnum.ORGANIZER, RoleEnum.ADMIN)
@@ -64,4 +93,3 @@ export class ContestsController {
         return this.contestsService.remove(id, req.user.id, isAdmin);
     }
 }
-

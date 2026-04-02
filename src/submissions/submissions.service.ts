@@ -13,6 +13,14 @@ export class SubmissionsService {
         private readonly teamMemberRepo: teamMemberRepository
     ) { }
 
+    /**
+     * creates a submission for a team
+     * @param createSubmissionDto - the submission details to create
+     * @param userId - the user making the request
+     * @param isAdmin - whether the requester is an admin
+     * @returns the created submission
+     * @throws ForbiddenException - when the requester is not allowed to submit for the team
+     */
     async create(createSubmissionDto: CreateSubmissionDto, userId: string, isAdmin: boolean) {
         if (!isAdmin) {
             const isMember = await this.teamMemberRepo.findByTeamAndUser(createSubmissionDto.teamId, userId);
@@ -27,6 +35,11 @@ export class SubmissionsService {
         });
     }
 
+    /**
+     * returns paginated submissions
+     * @param queryDto - the pagination and filter options
+     * @returns the paginated submission list
+     */
     async findAll(queryDto: QuerySubmissionDto) {
         return this.submissionRepository.findManyWithPagination({
             filterOptions: queryDto.filters,
@@ -38,12 +51,27 @@ export class SubmissionsService {
         });
     }
 
+    /**
+     * returns a submission by id
+     * @param id - the submission id
+     * @returns the matching submission
+     * @throws NotFoundException - when the submission does not exist
+     */
     async findOne(id: string) {
         const submission = await this.submissionRepository.findById(id);
         if (!submission) throw new NotFoundException('Submission not found');
         return submission;
     }
 
+    /**
+     * updates a submission by id
+     * @param id - the submission id
+     * @param updateDto - the fields to update
+     * @param userId - the user making the request
+     * @param isAdmin - whether the requester is an admin
+     * @returns the updated submission
+     * @throws ForbiddenException - when the requester cannot update the submission
+     */
     async update(id: string, updateDto: UpdateSubmissionDto, userId: string, isAdmin: boolean) {
         const submission = await this.findOne(id);
 
@@ -57,6 +85,14 @@ export class SubmissionsService {
         return this.submissionRepository.update(id, updateDto);
     }
 
+    /**
+     * removes a submission by id
+     * @param id - the submission id
+     * @param userId - the user making the request
+     * @param isAdmin - whether the requester is an admin
+     * @returns nothing
+     * @throws ForbiddenException - when the requester cannot remove the submission
+     */
     async remove(id: string, userId: string, isAdmin: boolean) {
         const submission = await this.findOne(id);
         

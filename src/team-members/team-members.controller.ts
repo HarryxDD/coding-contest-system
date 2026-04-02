@@ -29,6 +29,11 @@ import { TeamMember } from './domain/team-member';
 export class TeamMembersController {
   constructor(private readonly teamMembersService: TeamMembersService) {}
 
+  /**
+   * returns paginated team memberships
+   * @param query - the pagination and filter options
+   * @returns the paginated team membership list
+   */
   @ApiBearerAuth()
   @UseGuards(JwtOrPatAuthGuard)
   @Get()
@@ -43,6 +48,11 @@ export class TeamMembersController {
     return infinityPagination(data, { page, limit });
   }
 
+  /**
+   * returns a team membership by id
+   * @param id - the team membership id
+   * @returns the matching team membership
+   */
   @ApiBearerAuth()
   @UseGuards(JwtOrPatAuthGuard)
   @Get(':id')
@@ -50,6 +60,12 @@ export class TeamMembersController {
     return this.teamMembersService.findOne(id);
   }
 
+  /**
+   * creates a team membership
+   * @param createTeamMemberDto - the team membership details
+   * @param req - the authenticated request
+   * @returns the created team membership
+   */
   @ApiBearerAuth()
   @UseGuards(JwtOrPatAuthGuard, RolesGuard)
   @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
@@ -64,6 +80,12 @@ export class TeamMembersController {
     );
   }
 
+  /**
+   * removes a team membership by id
+   * @param id - the team membership id
+   * @param req - the authenticated request
+   * @returns nothing
+   */
   @ApiBearerAuth()
   @UseGuards(JwtOrPatAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)

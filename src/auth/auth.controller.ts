@@ -9,12 +9,22 @@ import { AuthRegisterDto } from "./dto/auth-register.dto";
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
 
+    /**
+     * logs in a user with email and password
+     * @param loginDto - the login credentials
+     * @returns the signed token and authenticated user
+     */
     @Post('login')
     @HttpCode(HttpStatus.OK)
     public async login(@Body() loginDto: AuthLoginDto) {
         return this.authService.validateLogin(loginDto);
     }
 
+    /**
+     * registers a new user account
+     * @param registerDto - the registration details
+     * @returns the signed token and created user
+     */
     @Post('register')
     @HttpCode(HttpStatus.CREATED)
     public async register(@Body() registerDto: AuthRegisterDto) {

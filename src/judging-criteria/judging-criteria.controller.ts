@@ -28,6 +28,11 @@ import { QueryJudgingCriteriaDto } from './dto/query-judging-criteria.dto';
 export class JudgingCriteriaController {
   constructor(private readonly judgingCriteriaService: JudgingCriteriaService) {}
 
+  /**
+   * creates judging criteria
+   * @param createJudgingCriteriaDto - the criteria details to create
+   * @returns the created judging criteria
+   */
   @Post()
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER)
   @ApiOperation({})
@@ -38,6 +43,11 @@ export class JudgingCriteriaController {
     return this.judgingCriteriaService.create(createJudgingCriteriaDto);
   }
 
+  /**
+   * returns judging criteria for a contest
+   * @param contestId - the contest id
+   * @returns the contest judging criteria
+   */
   @Get('contest/:contestId')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE, RoleEnum.PARTICIPANT)
   @ApiOperation({})
@@ -46,6 +56,11 @@ export class JudgingCriteriaController {
     return this.judgingCriteriaService.findByContest(contestId);
   }
 
+  /**
+   * returns paginated judging criteria
+   * @param queryDto - the pagination and filter options
+   * @returns the paginated judging criteria list
+   */
   @Get()
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE, RoleEnum.PARTICIPANT)
   @ApiOperation({})
@@ -54,6 +69,11 @@ export class JudgingCriteriaController {
     return this.judgingCriteriaService.findManyWithPagination(queryDto);
   }
 
+  /**
+   * returns judging criteria by id
+   * @param id - the judging criteria id
+   * @returns the matching judging criteria
+   */
   @Get(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE, RoleEnum.PARTICIPANT)
   @ApiOperation({})
@@ -63,6 +83,12 @@ export class JudgingCriteriaController {
     return this.judgingCriteriaService.findOne(id);
   }
 
+  /**
+   * updates judging criteria by id
+   * @param id - the judging criteria id
+   * @param updateJudgingCriteriaDto - the fields to update
+   * @returns the updated judging criteria
+   */
   @Patch(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER)
   @ApiOperation({})
@@ -75,6 +101,11 @@ export class JudgingCriteriaController {
     return this.judgingCriteriaService.update(id, updateJudgingCriteriaDto);
   }
 
+  /**
+   * removes judging criteria by id
+   * @param id - the judging criteria id
+   * @returns nothing
+   */
   @Delete(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER)
   @ApiOperation({})
