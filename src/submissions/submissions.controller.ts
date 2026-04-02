@@ -17,6 +17,11 @@ import { Submission } from './domain/submission';
 export class SubmissionsController {
     constructor(private readonly submissionsService: SubmissionsService) { }
 
+    /**
+     * returns paginated submissions
+     * @param query - the pagination and filter options
+     * @returns the paginated submission list
+     */
     @ApiBearerAuth()
     @UseGuards(JwtOrPatAuthGuard)
     @Get()
@@ -29,6 +34,11 @@ export class SubmissionsController {
         return infinityPagination(data, { page, limit });
     }
 
+    /**
+     * returns a submission by id
+     * @param id - the submission id
+     * @returns the matching submission
+     */
     @ApiBearerAuth()
     @UseGuards(JwtOrPatAuthGuard)
     @Get(':id')
@@ -36,6 +46,12 @@ export class SubmissionsController {
         return this.submissionsService.findOne(id);
     }
 
+    /**
+     * creates a submission
+     * @param createSubmissionDto - the submission details to create
+     * @param req - the authenticated request
+     * @returns the created submission
+     */
     @ApiBearerAuth()
     @UseGuards(JwtOrPatAuthGuard, RolesGuard)
     @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
@@ -45,6 +61,13 @@ export class SubmissionsController {
         return this.submissionsService.create(createSubmissionDto, req.user.id, isAdmin);
     }
 
+    /**
+     * updates a submission by id
+     * @param id - the submission id
+     * @param updateSubmissionDto - the fields to update
+     * @param req - the authenticated request
+     * @returns the updated submission
+     */
     @ApiBearerAuth()
     @UseGuards(JwtOrPatAuthGuard, RolesGuard)
     @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
@@ -54,6 +77,12 @@ export class SubmissionsController {
         return this.submissionsService.update(id, updateSubmissionDto, req.user.id, isAdmin);
     }
 
+    /**
+     * removes a submission by id
+     * @param id - the submission id
+     * @param req - the authenticated request
+     * @returns nothing
+     */
     @ApiBearerAuth()
     @UseGuards(JwtOrPatAuthGuard, RolesGuard)
     @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)

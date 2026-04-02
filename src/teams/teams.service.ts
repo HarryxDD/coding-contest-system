@@ -18,6 +18,13 @@ export class TeamsService {
     private readonly contestRepo: contestRepository,
   ) {}
 
+  /**
+   * creates a team and adds the creator as a member
+   * @param createTeamDto - the team details to create
+   * @param creatorId - the creator user id
+   * @returns the created team
+   * @throws NotFoundException - when the contest does not exist
+   */
   async create(createTeamDto: CreateTeamDto, creatorId: string) {
     const contest = await this.contestRepo.findById(createTeamDto.contestId);
     if (!contest) throw new NotFoundException('Contest not found');
@@ -33,6 +40,11 @@ export class TeamsService {
     return team;
   }
 
+  /**
+   * returns paginated teams
+   * @param queryDto - the pagination and filter options
+   * @returns the paginated team list
+   */
   async findAll(queryDto: QueryTeamDto) {
     return this.teamRepo.findManyWithPagination({
       filterOptions: queryDto.filters,
@@ -44,6 +56,12 @@ export class TeamsService {
     });
   }
 
+  /**
+   * returns a team by id with members
+   * @param id - the team id
+   * @returns the matching team
+   * @throws NotFoundException - when the team does not exist
+   */
   async findOne(id: string) {
     const team = await this.teamRepo.findById(id);
     if (!team) throw new NotFoundException('Team not found');
@@ -57,6 +75,15 @@ export class TeamsService {
     return team;
   }
 
+  /**
+   * updates a team by id
+   * @param id - the team id
+   * @param updateDto - the fields to update
+   * @param requestingUserId - the user making the request
+   * @param isAdmin - whether the requester is an admin
+   * @returns the updated team
+   * @throws ForbiddenException - when the requester is not the team creator or an admin
+   */
   async update(
     id: string,
     updateDto: UpdateTeamDto,
@@ -67,6 +94,14 @@ export class TeamsService {
     return this.teamRepo.update(id, updateDto);
   }
 
+  /**
+   * removes a team by id
+   * @param id - the team id
+   * @param requestingUserId - the user making the request
+   * @param isAdmin - whether the requester is an admin
+   * @returns nothing
+   * @throws ForbiddenException - when the requester is not the team creator or an admin
+   */
   async remove(id: string, requestingUserId: string, isAdmin: boolean) {
     await this.verifyCreatorOrAdmin(id, requestingUserId, isAdmin);
     await this.teamRepo.remove(id);

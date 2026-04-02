@@ -16,6 +16,12 @@ export class AuthService {
         private userRepository: Repository<UserEntity>
     ) { }
 
+    /**
+     * validates user credentials and issues a token
+     * @param loginDto - the login credentials
+     * @returns the signed token and authenticated user
+     * @throws UnauthorizedException - when the email or password is invalid
+     */
     async validateLogin(loginDto: AuthLoginDto) {
         const user = await this.userRepository.findOne({
             where: { email: loginDto.email }
@@ -30,6 +36,12 @@ export class AuthService {
         return { token, user };
     }
 
+    /**
+     * creates a new user account and issues a token
+     * @param registerDto - the registration details
+     * @returns the signed token and created user
+     * @throws UnprocessableEntityException - when the email or username already exists
+     */
     async register(registerDto: AuthRegisterDto) {
         const existingUser = await this.userRepository.findOne({
             where: [{ email: registerDto.email }, { username: registerDto.username }]

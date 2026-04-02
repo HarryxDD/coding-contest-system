@@ -24,6 +24,16 @@ export class ScoresService {
     private readonly criteriaRepo: judgingCriteriaRepository,
   ) {}
 
+  /**
+   * creates a score for a submission
+   * @param createDto - the score details to create
+   * @param judgeId - the judge user id
+   * @returns the created score
+   * @throws NotFoundException - when the submission or criteria does not exist
+   * @throws ForbiddenException - when the judge is not assigned to the contest
+   * @throws BadRequestException - when the score exceeds the criteria max score
+   * @throws ConflictException - when the judge already scored the submission for the criteria
+   */
   async create(createDto: CreateScoreDto, judgeId: string) {
     // find the submission to get its contest
     const submission = await this.submissionRepo.findById(
@@ -67,6 +77,11 @@ export class ScoresService {
     return this.scoreRepo.create({ ...createDto, judgeId });
   }
 
+  /**
+   * returns paginated scores
+   * @param queryDto - the pagination and filter options
+   * @returns the paginated score list
+   */
   async findAll(queryDto: QueryScoreDto) {
     return this.scoreRepo.findManyWithPagination({
       filterOptions: queryDto.filters,
@@ -78,12 +93,28 @@ export class ScoresService {
     });
   }
 
+  /**
+   * returns a score by id
+   * @param id - the score id
+   * @returns the matching score
+   * @throws NotFoundException - when the score does not exist
+   */
   async findOne(id: string) {
     const score = await this.scoreRepo.findById(id);
     if (!score) throw new NotFoundException('Score not found');
     return score;
   }
 
+  /**
+   * updates a score by id
+   * @param id - the score id
+   * @param updateDto - the fields to update
+   * @param userId - the user making the request
+   * @param userRole - the role of the requester
+   * @returns the updated score
+   * @throws ForbiddenException - when a judge tries to update another judge's score
+   * @throws BadRequestException - when the updated score exceeds the criteria max score
+   */
   async update(
     id: string,
     updateDto: UpdateScoreDto,
@@ -110,6 +141,14 @@ export class ScoresService {
     return this.scoreRepo.update(id, updateDto);
   }
 
+  /**
+   * removes a score by id
+   * @param id - the score id
+   * @param userId - the user making the request
+   * @param userRole - the role of the requester
+   * @returns nothing
+   * @throws ForbiddenException - when a judge tries to delete another judge's score
+   */
   async remove(id: string, userId: string, userRole: RoleEnum) {
     const score = await this.findOne(id);
     const isAdmin = userRole === RoleEnum.ADMIN;

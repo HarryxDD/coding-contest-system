@@ -23,6 +23,12 @@ import { CreatePatDto } from './pat.dto';
 export class PersonalAccessTokensController {
   constructor(private readonly patService: PatService) {}
 
+  /**
+   * creates a personal access token for the authenticated user
+   * @param dto - the token settings
+   * @param req - the authenticated request
+   * @returns the raw token and saved token metadata
+   */
   @Post()
   async create(@Body() dto: CreatePatDto, @Request() req) {
     const expiresAt = dto.expiresAt ? new Date(dto.expiresAt) : null;
@@ -43,6 +49,11 @@ export class PersonalAccessTokensController {
     };
   }
 
+  /**
+   * returns personal access tokens for the authenticated user
+   * @param req - the authenticated request
+   * @returns the user's token metadata list
+   */
   @Get()
   async list(@Request() req) {
     const rows = await this.patService.listForUser(req.user.id);
@@ -58,6 +69,12 @@ export class PersonalAccessTokensController {
     }));
   }
 
+  /**
+   * revokes a personal access token
+   * @param id - the token id
+   * @param req - the authenticated request
+   * @returns nothing
+   */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async revoke(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
