@@ -14,6 +14,7 @@ import { TeamMembersModule } from './team-members/team-members.module';
 import { ScoresModule } from './scores/scores.module';
 import { JudgingCriteriaModule } from './judging-criteria/judging-criteria.module';
 import { JudgeAssignmentsModule } from './judge-assignments/judge-assignments.module';
+import { PersonalAccessTokensModule } from './personal-access-tokens/personal-access-tokens.module';
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
@@ -39,6 +40,8 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
     ScoresModule,
     JudgingCriteriaModule,
     JudgeAssignmentsModule,
+    PersonalAccessTokensModule,
   ],
 })
 export class AppModule {}
+

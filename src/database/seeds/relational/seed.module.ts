@@ -13,6 +13,7 @@ import { TeamMemberSeedModule } from './team-member/team-member-seed.module';
 import { SubmissionSeedModule } from './submission/submission-seed.module';
 import { JudgeAssignmentSeedModule } from './judge-assignment/judge-assignment-seed.module';
 import { ScoreSeedModule } from './score/score-seed.module';
+import { PersonalAccessTokenSeedModule } from './personal-access-token/personal-access-token-seed.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ScoreSeedModule } from './score/score-seed.module';
       },
     }),
     UserSeedModule,
+    PersonalAccessTokenSeedModule,
     ContestSeedModule,
     JudgingCriteriaSeedModule,
     TeamSeedModule,

@@ -14,7 +14,7 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { RolesGuard } from '../roles/roles.guard';
 import { Roles } from '../roles/roles.decorator';
 import { RoleEnum } from '../roles/roles.enum';
@@ -28,11 +28,16 @@ import { Score } from './domain/score';
 
 @ApiTags('Scores')
 @ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(JwtOrPatAuthGuard)
 @Controller('scores')
 export class ScoresController {
   constructor(private readonly scoresService: ScoresService) {}
 
+  /**
+   * returns paginated scores
+   * @param query - the pagination and filter options
+   * @returns the paginated score list
+   */
   @Get()
   async findAll(
     @Query() query: QueryScoreDto,
@@ -45,11 +50,22 @@ export class ScoresController {
     return infinityPagination(data, { page, limit });
   }
 
+  /**
+   * returns a score by id
+   * @param id - the score id
+   * @returns the matching score
+   */
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.scoresService.findOne(id);
   }
 
+  /**
+   * creates a score
+   * @param createScoreDto - the score details to create
+   * @param req - the authenticated request
+   * @returns the created score
+   */
   @UseGuards(RolesGuard)
   @Roles(RoleEnum.JUDGE, RoleEnum.ADMIN)
   @HttpCode(HttpStatus.CREATED)
@@ -58,6 +74,13 @@ export class ScoresController {
     return this.scoresService.create(createScoreDto, req.user.id);
   }
 
+  /**
+   * updates a score by id
+   * @param id - the score id
+   * @param updateScoreDto - the fields to update
+   * @param req - the authenticated request
+   * @returns the updated score
+   */
   @UseGuards(RolesGuard)
   @Roles(RoleEnum.JUDGE, RoleEnum.ADMIN)
   @Patch(':id')
@@ -69,6 +92,12 @@ export class ScoresController {
     return this.scoresService.update(id, updateScoreDto, req.user.id, req.user.role);
   }
 
+  /**
+   * removes a score by id
+   * @param id - the score id
+   * @param req - the authenticated request
+   * @returns nothing
+   */
   @UseGuards(RolesGuard)
   @Roles(RoleEnum.JUDGE, RoleEnum.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -77,3 +106,4 @@ export class ScoresController {
     return this.scoresService.remove(id, req.user.id, req.user.role);
   }
 }
+

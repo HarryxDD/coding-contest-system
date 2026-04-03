@@ -19,6 +19,16 @@ export class TeamMembersService {
     private readonly contestRepo: contestRepository,
   ) {}
 
+  /**
+   * adds a user to a team
+   * @param createDto - the team membership details
+   * @param requestingUserId - the user making the request
+   * @param isAdmin - whether the requester is an admin
+   * @returns the created team membership
+   * @throws NotFoundException - when the team or contest does not exist
+   * @throws BadRequestException - when the team is already full
+   * @throws ConflictException - when the user is already on the team
+   */
   async create(
     createDto: CreateTeamMemberDto,
     requestingUserId: string,
@@ -52,6 +62,11 @@ export class TeamMembersService {
     return this.teamMemberRepo.create({ teamId: team.id, userId: targetUserId });
   }
 
+  /**
+   * returns paginated team memberships
+   * @param queryDto - the pagination and filter options
+   * @returns the paginated team membership list
+   */
   async findAll(queryDto: QueryTeamMemberDto) {
     return this.teamMemberRepo.findManyWithPagination({
       filterOptions: queryDto.filters,
@@ -63,12 +78,26 @@ export class TeamMembersService {
     });
   }
 
+  /**
+   * returns a team membership by id
+   * @param id - the team membership id
+   * @returns the matching team membership
+   * @throws NotFoundException - when the membership does not exist
+   */
   async findOne(id: string) {
     const member = await this.teamMemberRepo.findById(id);
     if (!member) throw new NotFoundException('Team membership not found');
     return member;
   }
 
+  /**
+   * removes a team membership by id
+   * @param id - the team membership id
+   * @param requestingUserId - the user making the request
+   * @param isAdmin - whether the requester is an admin
+   * @returns nothing
+   * @throws ForbiddenException - when the requester cannot remove the membership
+   */
   async remove(id: string, requestingUserId: string, isAdmin: boolean) {
     const membership = await this.findOne(id);
 

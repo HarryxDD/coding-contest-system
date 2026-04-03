@@ -11,6 +11,12 @@ export class UsersService {
         private readonly userRepository: userRepository
     ) { }
 
+    /**
+     * creates a new user record
+     * @param createDto - the user details to store
+     * @returns the created user
+     * @throws UnprocessableEntityException - when the email or username already exists
+     */
     async create(createDto: CreateUserDto) {
         const existingEmail = await this.userRepository.findByEmail(createDto.email)
         const existingUsername = await this.userRepository.findByUsername(createDto.username)
@@ -31,10 +37,19 @@ export class UsersService {
         })
     }
 
+    /**
+     * returns all users
+     * @returns the full user list
+     */
     async findAll() {
         return this.userRepository.findAll()
     }
 
+    /**
+     * returns paginated users
+     * @param queryDto - the pagination and filter options
+     * @returns the paginated user list
+     */
     async findManyWithPagination(queryDto: QueryUserDto) {
         return this.userRepository.findManyWithPagination({
             filterOptions: queryDto.filters,
@@ -46,12 +61,25 @@ export class UsersService {
         })
     }
 
+    /**
+     * returns a user by id
+     * @param id - the user id
+     * @returns the matching user
+     * @throws NotFoundException - when the user does not exist
+     */
     async findOne(id: string) {
         const user = await this.userRepository.findById(id)
         if (!user) throw new NotFoundException('User not found')
         return user
     }
 
+    /**
+     * updates a user record
+     * @param id - the user id
+     * @param updateDto - the fields to update
+     * @returns the updated user
+     * @throws NotFoundException - when the user does not exist
+     */
     async update(id: string, updateDto: UpdateUserDto) {
         const user = await this.userRepository.findById(id)
         if (!user) throw new NotFoundException('User not found')
@@ -70,6 +98,11 @@ export class UsersService {
         })
     }
 
+    /**
+     * removes a user by id
+     * @param id - the user id
+     * @returns the removal result
+     */
     async remove(id: string) {
         return this.userRepository.remove(id)
     }

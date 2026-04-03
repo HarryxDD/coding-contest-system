@@ -13,7 +13,7 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { RolesGuard } from '../roles/roles.guard';
 import { Roles } from '../roles/roles.decorator';
 import { RoleEnum } from '../roles/roles.enum';
@@ -29,8 +29,13 @@ import { TeamMember } from './domain/team-member';
 export class TeamMembersController {
   constructor(private readonly teamMembersService: TeamMembersService) {}
 
+  /**
+   * returns paginated team memberships
+   * @param query - the pagination and filter options
+   * @returns the paginated team membership list
+   */
   @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtOrPatAuthGuard)
   @Get()
   async findAll(
     @Query() query: QueryTeamMemberDto,
@@ -43,15 +48,26 @@ export class TeamMembersController {
     return infinityPagination(data, { page, limit });
   }
 
+  /**
+   * returns a team membership by id
+   * @param id - the team membership id
+   * @returns the matching team membership
+   */
   @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtOrPatAuthGuard)
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.teamMembersService.findOne(id);
   }
 
+  /**
+   * creates a team membership
+   * @param createTeamMemberDto - the team membership details
+   * @param req - the authenticated request
+   * @returns the created team membership
+   */
   @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @UseGuards(JwtOrPatAuthGuard, RolesGuard)
   @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
   @HttpCode(HttpStatus.CREATED)
   @Post()
@@ -64,8 +80,14 @@ export class TeamMembersController {
     );
   }
 
+  /**
+   * removes a team membership by id
+   * @param id - the team membership id
+   * @param req - the authenticated request
+   * @returns nothing
+   */
   @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtOrPatAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   remove(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
@@ -73,3 +95,4 @@ export class TeamMembersController {
     return this.teamMembersService.remove(id, req.user.id, isAdmin);
   }
 }
+

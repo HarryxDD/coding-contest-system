@@ -14,7 +14,7 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { RolesGuard } from '../roles/roles.guard';
 import { Roles } from '../roles/roles.decorator';
 import { RoleEnum } from '../roles/roles.enum';
@@ -31,8 +31,13 @@ import { Team } from './domain/team';
 export class TeamsController {
   constructor(private readonly teamsService: TeamsService) {}
 
+  /**
+   * returns paginated teams
+   * @param query - the pagination and filter options
+   * @returns the paginated team list
+   */
   @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtOrPatAuthGuard)
   @Get()
   async findAll(
     @Query() query: QueryTeamDto,
@@ -45,13 +50,24 @@ export class TeamsController {
     return infinityPagination(data, { page, limit });
   }
 
+  /**
+   * returns a team by id
+   * @param id - the team id
+   * @returns the matching team
+   */
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.teamsService.findOne(id);
   }
 
+  /**
+   * creates a team for the authenticated user
+   * @param createTeamDto - the team details to create
+   * @param req - the authenticated request
+   * @returns the created team
+   */
   @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @UseGuards(JwtOrPatAuthGuard, RolesGuard)
   @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
   @HttpCode(HttpStatus.CREATED)
   @Post()
@@ -59,8 +75,15 @@ export class TeamsController {
     return this.teamsService.create(createTeamDto, req.user.id);
   }
 
+  /**
+   * updates a team by id
+   * @param id - the team id
+   * @param updateTeamDto - the fields to update
+   * @param req - the authenticated request
+   * @returns the updated team
+   */
   @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtOrPatAuthGuard)
   @Patch(':id')
   update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -71,8 +94,14 @@ export class TeamsController {
     return this.teamsService.update(id, updateTeamDto, req.user.id, isAdmin);
   }
 
+  /**
+   * removes a team by id
+   * @param id - the team id
+   * @param req - the authenticated request
+   * @returns nothing
+   */
   @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtOrPatAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   remove(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
@@ -80,3 +109,4 @@ export class TeamsController {
     return this.teamsService.remove(id, req.user.id, isAdmin);
   }
 }
+

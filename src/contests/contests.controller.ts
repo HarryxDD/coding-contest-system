@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Request, HttpCode, HttpStatus, ParseUUIDPipe } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { RolesGuard } from '../roles/roles.guard';
 import { Roles } from '../roles/roles.decorator';
 import { RoleEnum } from '../roles/roles.enum';
@@ -17,8 +17,13 @@ import { Contest } from './domain/contest';
 export class ContestsController {
     constructor(private readonly contestsService: ContestsService) { }
 
+    /**
+     * returns paginated contests
+     * @param query - the pagination and filter options
+     * @returns the paginated contest list
+     */
     @ApiBearerAuth()
-    @UseGuards(AuthGuard('jwt'))
+    @UseGuards(JwtOrPatAuthGuard)
     @Get()
     async findAll(@Query() query: QueryContestDto): Promise<InfinityPaginationResponseDto<Contest>> {
         const page = query?.page ?? 1;
@@ -29,13 +34,24 @@ export class ContestsController {
         return infinityPagination(data, { page, limit });
     }
 
+    /**
+     * returns a contest by id
+     * @param id - the contest id
+     * @returns the matching contest
+     */
     @Get(':id')
     findOne(@Param('id', ParseUUIDPipe) id: string) {
         return this.contestsService.findOne(id);
     }
 
+    /**
+     * creates a contest for the authenticated organizer
+     * @param createContestDto - the contest details to create
+     * @param req - the authenticated request
+     * @returns the created contest
+     */
     @ApiBearerAuth()
-    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @UseGuards(JwtOrPatAuthGuard, RolesGuard)
     @Roles(RoleEnum.ORGANIZER, RoleEnum.ADMIN)
     @Post()
     create(@Body() createContestDto: CreateContestDto, @Request() req) {
@@ -43,8 +59,15 @@ export class ContestsController {
         return this.contestsService.create(createContestDto, req.user.id);
     }
 
+    /**
+     * updates a contest by id
+     * @param id - the contest id
+     * @param updateContestDto - the fields to update
+     * @param req - the authenticated request
+     * @returns the updated contest
+     */
     @ApiBearerAuth()
-    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @UseGuards(JwtOrPatAuthGuard, RolesGuard)
     @Roles(RoleEnum.ORGANIZER, RoleEnum.ADMIN)
     @Patch(':id')
     update(@Param('id', ParseUUIDPipe) id: string, @Body() updateContestDto: UpdateContestDto, @Request() req) {
@@ -53,8 +76,14 @@ export class ContestsController {
         return this.contestsService.update(id, updateContestDto, req.user.id, isAdmin);
     }
 
+    /**
+     * removes a contest by id
+     * @param id - the contest id
+     * @param req - the authenticated request
+     * @returns nothing
+     */
     @ApiBearerAuth()
-    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @UseGuards(JwtOrPatAuthGuard, RolesGuard)
     @Roles(RoleEnum.ORGANIZER, RoleEnum.ADMIN)
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)

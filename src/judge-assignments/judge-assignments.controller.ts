@@ -11,8 +11,8 @@ import {
   HttpStatus,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { JudgeAssignmentsService } from './judge-assignments.service';
 import { RolesGuard } from '@/roles/roles.guard';
 import { Roles } from '@/roles/roles.decorator';
@@ -21,12 +21,17 @@ import { CreateJudgeAssignmentDto } from './dto/create-judge-assignment.dto';
 import { QueryJudgeAssignmentDto } from './dto/query-judge-assignment.dto';
 
 @ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtOrPatAuthGuard, RolesGuard)
 @ApiTags('Judge Assignments')
 @Controller('judge-assignments')
 export class JudgeAssignmentsController {
   constructor(private readonly judgeAssignmentsService: JudgeAssignmentsService) {}
 
+  /**
+   * creates a judge assignment
+   * @param createJudgeAssignmentDto - the assignment details to create
+   * @returns the created judge assignment
+   */
   @Post()
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER)
   @ApiOperation({})
@@ -38,6 +43,11 @@ export class JudgeAssignmentsController {
     return this.judgeAssignmentsService.create(createJudgeAssignmentDto);
   }
 
+  /**
+   * returns judge assignments for a contest
+   * @param contestId - the contest id
+   * @returns the contest judge assignments
+   */
   @Get('contest/:contestId')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE)
   @ApiOperation({})
@@ -46,6 +56,11 @@ export class JudgeAssignmentsController {
     return this.judgeAssignmentsService.findByContest(contestId);
   }
 
+  /**
+   * returns judge assignments for a judge
+   * @param judgeId - the judge user id
+   * @returns the judge assignments
+   */
   @Get('judge/:judgeId')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE)
   @ApiOperation({})
@@ -54,6 +69,11 @@ export class JudgeAssignmentsController {
     return this.judgeAssignmentsService.findByJudge(judgeId);
   }
 
+  /**
+   * returns paginated judge assignments
+   * @param queryDto - the pagination and filter options
+   * @returns the paginated judge assignment list
+   */
   @Get()
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE, RoleEnum.PARTICIPANT)
   @ApiOperation({})
@@ -62,6 +82,11 @@ export class JudgeAssignmentsController {
     return this.judgeAssignmentsService.findManyWithPagination(queryDto);
   }
 
+  /**
+   * returns a judge assignment by id
+   * @param id - the judge assignment id
+   * @returns the matching judge assignment
+   */
   @Get(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE, RoleEnum.PARTICIPANT)
   @ApiOperation({})
@@ -71,6 +96,11 @@ export class JudgeAssignmentsController {
     return this.judgeAssignmentsService.findOne(id);
   }
 
+  /**
+   * removes a judge assignment by id
+   * @param id - the judge assignment id
+   * @returns nothing
+   */
   @Delete(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER)
   @ApiOperation({})
@@ -81,3 +111,4 @@ export class JudgeAssignmentsController {
     return this.judgeAssignmentsService.remove(id);
   }
 }
+
