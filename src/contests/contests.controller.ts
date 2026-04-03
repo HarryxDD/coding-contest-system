@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Request, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Request, HttpCode, HttpStatus, ParseUUIDPipe } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { RolesGuard } from '../roles/roles.guard';
@@ -11,11 +11,17 @@ import { QueryContestDto } from './dto/query-contest.dto';
 import { infinityPagination } from '../utils/infinity-pagination';
 import { InfinityPaginationResponseDto } from '../utils/dto/infinity-pagination-response.dto';
 import { Contest } from './domain/contest';
+import { QueryTeamDto } from '../teams/dto/query-team.dto';
+import { Team } from '../teams/domain/team';
+import { TeamsService } from '../teams/teams.service';
 
 @ApiTags('Contests')
 @Controller('contests')
 export class ContestsController {
-    constructor(private readonly contestsService: ContestsService) { }
+    constructor(
+        private readonly contestsService: ContestsService,
+        private readonly teamsService: TeamsService,
+    ) { }
 
     /**
      * returns paginated contests
@@ -40,8 +46,29 @@ export class ContestsController {
      * @returns the matching contest
      */
     @Get(':id')
-    findOne(@Param('id') id: string) {
+    findOne(@Param('id', ParseUUIDPipe) id: string) {
         return this.contestsService.findOne(id);
+    }
+
+    /**
+     * returns paginated teams for a contest
+     * @param contestId - the contest id
+     * @param query - the pagination options
+     * @returns the paginated team list
+     */
+    @ApiBearerAuth()
+    @UseGuards(JwtOrPatAuthGuard)
+    @Get(':id/teams')
+    async findTeams(
+        @Param('id', ParseUUIDPipe) contestId: string,
+        @Query() query: QueryTeamDto,
+    ): Promise<InfinityPaginationResponseDto<Team>> {
+        const page = query?.page ?? 1;
+        let limit = query?.limit ?? 10;
+        if (limit > 50) limit = 50;
+
+        const data = await this.teamsService.findByContestId(contestId, query);
+        return infinityPagination(data, { page, limit });
     }
 
     /**
@@ -55,7 +82,6 @@ export class ContestsController {
     @Roles(RoleEnum.ORGANIZER, RoleEnum.ADMIN)
     @Post()
     create(@Body() createContestDto: CreateContestDto, @Request() req) {
-        // Current user as organizer
         return this.contestsService.create(createContestDto, req.user.id);
     }
 
@@ -70,9 +96,8 @@ export class ContestsController {
     @UseGuards(JwtOrPatAuthGuard, RolesGuard)
     @Roles(RoleEnum.ORGANIZER, RoleEnum.ADMIN)
     @Patch(':id')
-    update(@Param('id') id: string, @Body() updateContestDto: UpdateContestDto, @Request() req) {
+    update(@Param('id', ParseUUIDPipe) id: string, @Body() updateContestDto: UpdateContestDto, @Request() req) {
         const isAdmin = req.user.role === RoleEnum.ADMIN;
-
         return this.contestsService.update(id, updateContestDto, req.user.id, isAdmin);
     }
 
@@ -87,9 +112,8 @@ export class ContestsController {
     @Roles(RoleEnum.ORGANIZER, RoleEnum.ADMIN)
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
-    remove(@Param('id') id: string, @Request() req) {
+    remove(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
         const isAdmin = req.user.role === RoleEnum.ADMIN;
-
         return this.contestsService.remove(id, req.user.id, isAdmin);
     }
 }

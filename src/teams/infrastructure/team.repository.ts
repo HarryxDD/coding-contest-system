@@ -19,6 +19,11 @@ export abstract class teamRepository {
 
   abstract findById(id: Team['id']): Promise<Team | null>;
 
+  abstract findByContestId(
+    contestId: string,
+    paginationOptions: IPaginationOptions,
+  ): Promise<Team[]>;
+
   abstract update(
     id: Team['id'],
     payload: Partial<Team>,
