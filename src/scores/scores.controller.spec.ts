@@ -2,6 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../app.module';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { UserEntity } from '../users/infrastructure/entities/user.entity';
+import { Repository } from 'typeorm';
+import { RoleEnum } from '../roles/roles.enum';
 
 describe('ScoresController', () => {
   let app: INestApplication;
@@ -11,6 +15,7 @@ describe('ScoresController', () => {
   let participantToken: string;
   let judgeId: string;
   let assignedContestId: string;
+  let userRepository: Repository<UserEntity>;
   let unassignedContestId: string;
   let testTeamId: string;
   let testSubmissionId: string;
@@ -42,16 +47,26 @@ describe('ScoresController', () => {
     app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
     await app.init();
 
+    userRepository = moduleFixture.get<Repository<UserEntity>>(
+      getRepositoryToken(UserEntity)
+    );
+
+    const organizer = {
+      username: `scorespec_admin_${randomSuffix}`,
+      email: `scorespec_admin_${randomSuffix}@example.com`,
+      password: 'password123',
+    };
+
+    const orgRegRes = await request(app.getHttpServer()).post('/auth/register').send(organizer);
+    await userRepository.update(orgRegRes.body.user.id, { role: RoleEnum.ADMIN });
+
     const adminRes = await request(app.getHttpServer())
       .post('/auth/login')
-      .send({ email: 'admin@example.com', password: 'admin123' });
-    adminToken = adminRes.body.token;
+      .send({ email: organizer.email, password: organizer.password });
+    adminToken = adminRes.body.token || adminRes.body.access_token || adminRes.body.accessToken;
 
-    await request(app.getHttpServer())
-      .post('/users')
-      .set('Authorization', `Bearer ${adminToken}`)
-      .send(judge)
-      .expect(201);
+    const judgeRegRes = await request(app.getHttpServer()).post('/auth/register').send(judge);
+    await userRepository.update(judgeRegRes.body.user.id, { role: RoleEnum.JUDGE });
 
     const judgeRes = await request(app.getHttpServer())
       .post('/auth/login')
@@ -94,7 +109,7 @@ describe('ScoresController', () => {
     unassignedContestId = unassignedContestRes.body.id;
 
     await request(app.getHttpServer())
-      .post('/judge-assignments')
+      .post(`/contests/${assignedContestId}/judge-assignments`)
       .set('Authorization', `Bearer ${adminToken}`)
       .send({
         contestId: assignedContestId,
@@ -103,7 +118,7 @@ describe('ScoresController', () => {
       .expect(201);
 
     const criteriaRes = await request(app.getHttpServer())
-      .post('/judging-criteria')
+      .post(`/contests/${assignedContestId}/criteria`)
       .set('Authorization', `Bearer ${adminToken}`)
       .send({
         contestId: assignedContestId,
@@ -125,7 +140,7 @@ describe('ScoresController', () => {
     testTeamId = teamRes.body.id;
 
     const submissionRes = await request(app.getHttpServer())
-      .post('/submissions')
+      .post(`/contests/${assignedContestId}/submissions`)
       .set('Authorization', `Bearer ${participantToken}`)
       .send({
         teamId: testTeamId,
@@ -145,7 +160,7 @@ describe('ScoresController', () => {
       .expect(201);
 
     const unassignedSubmissionRes = await request(app.getHttpServer())
-      .post('/submissions')
+      .post(`/contests/${unassignedContestId}/submissions`)
       .set('Authorization', `Bearer ${participantToken}`)
       .send({
         teamId: unassignedTeamRes.body.id,
@@ -163,7 +178,7 @@ describe('ScoresController', () => {
   describe('POST /scores', () => {
     it('returns 201 with the created score when the judge is assigned to the contest', async () => {
       const response = await request(app.getHttpServer())
-        .post('/scores')
+        .post(`/submissions/${testSubmissionId}/scores`)
         .set('Authorization', `Bearer ${judgeToken}`)
         .send({
           submissionId: testSubmissionId,
@@ -182,7 +197,7 @@ describe('ScoresController', () => {
 
     it('returns 403 when the judge is not assigned to the contest', () => {
       return request(app.getHttpServer())
-        .post('/scores')
+        .post(`/submissions/${unassignedSubmissionId}/scores`)
         .set('Authorization', `Bearer ${judgeToken}`)
         .send({
           submissionId: unassignedSubmissionId,
@@ -194,7 +209,7 @@ describe('ScoresController', () => {
 
     it('returns 400 when the score exceeds the criteria max_score', () => {
       return request(app.getHttpServer())
-        .post('/scores')
+        .post(`/submissions/${testSubmissionId}/scores`)
         .set('Authorization', `Bearer ${judgeToken}`)
         .send({
           submissionId: testSubmissionId,
@@ -206,7 +221,7 @@ describe('ScoresController', () => {
 
     it('returns 409 when the same judge scores the same submission and criteria twice', () => {
       return request(app.getHttpServer())
-        .post('/scores')
+        .post(`/submissions/${testSubmissionId}/scores`)
         .set('Authorization', `Bearer ${judgeToken}`)
         .send({
           submissionId: testSubmissionId,
@@ -220,7 +235,7 @@ describe('ScoresController', () => {
   describe('GET /scores/:id', () => {
     it('returns 200 with score data for a valid existing uuid', () => {
       return request(app.getHttpServer())
-        .get(`/scores/${createdScoreId}`)
+        .get(`/submissions/${testSubmissionId}/scores/${createdScoreId}`)
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(200)
         .then((response) => {
@@ -236,7 +251,7 @@ describe('ScoresController', () => {
   describe('DELETE /scores/:id', () => {
     it('returns 204 with no body when the judge deletes their own score', async () => {
       const response = await request(app.getHttpServer())
-        .delete(`/scores/${createdScoreId}`)
+        .delete(`/submissions/${testSubmissionId}/scores/${createdScoreId}`)
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(204);
 

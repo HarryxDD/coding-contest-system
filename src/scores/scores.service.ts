@@ -2,7 +2,6 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -26,65 +25,74 @@ export class ScoresService {
 
   /**
    * creates a score for a submission
+   * @param submissionId - the submission id
    * @param createDto - the score details to create
    * @param judgeId - the judge user id
    * @returns the created score
+   * @throws BadRequestException - when criteria id or score is missing or score exceeds max
    * @throws NotFoundException - when the submission or criteria does not exist
    * @throws ForbiddenException - when the judge is not assigned to the contest
-   * @throws BadRequestException - when the score exceeds the criteria max score
-   * @throws ConflictException - when the judge already scored the submission for the criteria
+   * @throws ConflictException - when the judge already scored this criteria for this submission
    */
-  async create(createDto: CreateScoreDto, judgeId: string) {
-    // find the submission to get its contest
-    const submission = await this.submissionRepo.findById(
-      createDto.submissionId,
-    );
-    if (!submission) throw new NotFoundException('Submission not found');
+  async createForSubmission(
+    submissionId: string,
+    createDto: CreateScoreDto,
+    judgeId: string,
+  ) {
+    const submission = await this.ensureSubmissionExists(submissionId);
 
-    // judge must be assigned to that contest
+    if (!createDto.criteriaId || createDto.score === undefined) {
+      throw new BadRequestException('criteria id and score are required');
+    }
+
     const assignment = await this.judgeAssignmentRepo.findByContestAndJudge(
       submission.contestId,
       judgeId,
     );
     if (!assignment) {
-      throw new ForbiddenException(
-        'You are not assigned to judge this contest',
-      );
+      throw new ForbiddenException('you are not assigned to judge this contest');
     }
 
-    // fetch criteria to validate max_score
     const criteria = await this.criteriaRepo.findById(createDto.criteriaId);
-    if (!criteria) throw new NotFoundException('Judging criteria not found');
+    if (!criteria) throw new NotFoundException('judging criteria not found');
+
+    if (criteria.contestId !== submission.contestId) {
+      throw new BadRequestException('judging criteria does not belong to this contest');
+    }
 
     if (createDto.score > criteria.maxScore) {
       throw new BadRequestException(
-        `Score ${createDto.score} exceeds the max allowed score of ${criteria.maxScore}`,
+        `score ${createDto.score} exceeds the max allowed score of ${criteria.maxScore}`,
       );
     }
 
-    // each judge can only score a submission+criteria pair once
     const duplicate = await this.scoreRepo.findBySubmissionJudgeCriteria(
-      createDto.submissionId,
+      submissionId,
       judgeId,
       createDto.criteriaId,
     );
     if (duplicate) {
-      throw new ConflictException(
-        'You have already scored this submission for this criteria',
-      );
+      throw new ConflictException('you have already scored this submission for this criteria');
     }
 
-    return this.scoreRepo.create({ ...createDto, judgeId });
+    return this.scoreRepo.create({ ...createDto, submissionId, judgeId });
   }
 
   /**
-   * returns paginated scores
+   * returns paginated scores for a submission
+   * @param submissionId - the submission id
    * @param queryDto - the pagination and filter options
    * @returns the paginated score list
+   * @throws NotFoundException - when the submission does not exist
    */
-  async findAll(queryDto: QueryScoreDto) {
+  async findAllForSubmission(submissionId: string, queryDto: QueryScoreDto) {
+    await this.ensureSubmissionExists(submissionId);
+
     return this.scoreRepo.findManyWithPagination({
-      filterOptions: queryDto.filters,
+      filterOptions: {
+        ...queryDto.filters,
+        submissionId,
+      },
       sortOptions: queryDto.sort,
       paginationOptions: {
         page: queryDto.page ?? 1,
@@ -94,19 +102,26 @@ export class ScoresService {
   }
 
   /**
-   * returns a score by id
+   * returns a score by id scoped to a submission
+   * @param submissionId - the submission id
    * @param id - the score id
    * @returns the matching score
-   * @throws NotFoundException - when the score does not exist
+   * @throws NotFoundException - when the submission or score does not exist
    */
-  async findOne(id: string) {
+  async findOneForSubmission(submissionId: string, id: string) {
+    await this.ensureSubmissionExists(submissionId);
+
     const score = await this.scoreRepo.findById(id);
-    if (!score) throw new NotFoundException('Score not found');
+    if (!score || score.submissionId !== submissionId) {
+      throw new NotFoundException('score not found');
+    }
+
     return score;
   }
 
   /**
-   * updates a score by id
+   * updates a score by id scoped to a submission
+   * @param submissionId - the submission id
    * @param id - the score id
    * @param updateDto - the fields to update
    * @param userId - the user making the request
@@ -115,25 +130,25 @@ export class ScoresService {
    * @throws ForbiddenException - when a judge tries to update another judge's score
    * @throws BadRequestException - when the updated score exceeds the criteria max score
    */
-  async update(
+  async updateForSubmission(
+    submissionId: string,
     id: string,
     updateDto: UpdateScoreDto,
     userId: string,
     userRole: RoleEnum,
   ) {
-    const score = await this.findOne(id);
+    const score = await this.findOneForSubmission(submissionId, id);
     const isAdmin = userRole === RoleEnum.ADMIN;
 
     if (!isAdmin && score.judgeId !== userId) {
-      throw new ForbiddenException('You can only update your own scores');
+      throw new ForbiddenException('you can only update your own scores');
     }
 
-    // if changing the score value, re-validate it against max_score
     if (updateDto.score !== undefined) {
       const criteria = await this.criteriaRepo.findById(score.criteriaId);
       if (criteria && updateDto.score > criteria.maxScore) {
         throw new BadRequestException(
-          `Score ${updateDto.score} exceeds the max allowed score of ${criteria.maxScore}`,
+          `score ${updateDto.score} exceeds the max allowed score of ${criteria.maxScore}`,
         );
       }
     }
@@ -142,21 +157,35 @@ export class ScoresService {
   }
 
   /**
-   * removes a score by id
+   * removes a score by id scoped to a submission
+   * @param submissionId - the submission id
    * @param id - the score id
    * @param userId - the user making the request
    * @param userRole - the role of the requester
    * @returns nothing
    * @throws ForbiddenException - when a judge tries to delete another judge's score
    */
-  async remove(id: string, userId: string, userRole: RoleEnum) {
-    const score = await this.findOne(id);
+  async removeForSubmission(
+    submissionId: string,
+    id: string,
+    userId: string,
+    userRole: RoleEnum,
+  ) {
+    const score = await this.findOneForSubmission(submissionId, id);
     const isAdmin = userRole === RoleEnum.ADMIN;
 
     if (!isAdmin && score.judgeId !== userId) {
-      throw new ForbiddenException('You can only delete your own scores');
+      throw new ForbiddenException('you can only delete your own scores');
     }
 
     await this.scoreRepo.remove(id);
+  }
+
+  private async ensureSubmissionExists(submissionId: string) {
+    const submission = await this.submissionRepo.findById(submissionId);
+    if (!submission) {
+      throw new NotFoundException('submission not found');
+    }
+    return submission;
   }
 }

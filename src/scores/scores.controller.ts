@@ -1,17 +1,17 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseGuards,
-  Query,
-  Request,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
   ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
@@ -29,39 +29,46 @@ import { Score } from './domain/score';
 @ApiTags('Scores')
 @ApiBearerAuth()
 @UseGuards(JwtOrPatAuthGuard)
-@Controller('scores')
+@Controller('submissions/:submissionId/scores')
 export class ScoresController {
   constructor(private readonly scoresService: ScoresService) {}
 
   /**
-   * returns paginated scores
+   * returns paginated scores for a submission
+   * @param submissionId - the submission id
    * @param query - the pagination and filter options
    * @returns the paginated score list
    */
   @Get()
   async findAll(
+    @Param('submissionId', ParseUUIDPipe) submissionId: string,
     @Query() query: QueryScoreDto,
   ): Promise<InfinityPaginationResponseDto<Score>> {
     const page = query?.page ?? 1;
     let limit = query?.limit ?? 10;
     if (limit > 50) limit = 50;
 
-    const data = await this.scoresService.findAll(query);
+    const data = await this.scoresService.findAllForSubmission(submissionId, query);
     return infinityPagination(data, { page, limit });
   }
 
   /**
-   * returns a score by id
+   * returns a score by id for a submission
+   * @param submissionId - the submission id
    * @param id - the score id
    * @returns the matching score
    */
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.scoresService.findOne(id);
+  findOne(
+    @Param('submissionId', ParseUUIDPipe) submissionId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.scoresService.findOneForSubmission(submissionId, id);
   }
 
   /**
-   * creates a score
+   * creates a score for a submission
+   * @param submissionId - the submission id
    * @param createScoreDto - the score details to create
    * @param req - the authenticated request
    * @returns the created score
@@ -70,12 +77,21 @@ export class ScoresController {
   @Roles(RoleEnum.JUDGE, RoleEnum.ADMIN)
   @HttpCode(HttpStatus.CREATED)
   @Post()
-  create(@Body() createScoreDto: CreateScoreDto, @Request() req) {
-    return this.scoresService.create(createScoreDto, req.user.id);
+  create(
+    @Param('submissionId', ParseUUIDPipe) submissionId: string,
+    @Body() createScoreDto: CreateScoreDto,
+    @Request() req,
+  ) {
+    return this.scoresService.createForSubmission(
+      submissionId,
+      createScoreDto,
+      req.user.id,
+    );
   }
 
   /**
-   * updates a score by id
+   * updates a score by id for a submission
+   * @param submissionId - the submission id
    * @param id - the score id
    * @param updateScoreDto - the fields to update
    * @param req - the authenticated request
@@ -85,15 +101,23 @@ export class ScoresController {
   @Roles(RoleEnum.JUDGE, RoleEnum.ADMIN)
   @Patch(':id')
   update(
+    @Param('submissionId', ParseUUIDPipe) submissionId: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateScoreDto: UpdateScoreDto,
     @Request() req,
   ) {
-    return this.scoresService.update(id, updateScoreDto, req.user.id, req.user.role);
+    return this.scoresService.updateForSubmission(
+      submissionId,
+      id,
+      updateScoreDto,
+      req.user.id,
+      req.user.role,
+    );
   }
 
   /**
-   * removes a score by id
+   * removes a score by id for a submission
+   * @param submissionId - the submission id
    * @param id - the score id
    * @param req - the authenticated request
    * @returns nothing
@@ -102,8 +126,16 @@ export class ScoresController {
   @Roles(RoleEnum.JUDGE, RoleEnum.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
-    return this.scoresService.remove(id, req.user.id, req.user.role);
+  remove(
+    @Param('submissionId', ParseUUIDPipe) submissionId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Request() req,
+  ) {
+    return this.scoresService.removeForSubmission(
+      submissionId,
+      id,
+      req.user.id,
+      req.user.role,
+    );
   }
 }
-

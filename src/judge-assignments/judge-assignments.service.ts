@@ -1,5 +1,11 @@
-import { Injectable, Inject, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { judgeAssignmentRepository } from './infrastructure/judge-assignment.repository';
+import { contestRepository } from '../contests/infrastructure/contest.repository';
 import { CreateJudgeAssignmentDto } from './dto/create-judge-assignment.dto';
 import { QueryJudgeAssignmentDto } from './dto/query-judge-assignment.dto';
 
@@ -7,104 +13,108 @@ import { QueryJudgeAssignmentDto } from './dto/query-judge-assignment.dto';
 export class JudgeAssignmentsService {
   constructor(
     private readonly repository: judgeAssignmentRepository,
+    private readonly contestRepo: contestRepository,
   ) {}
 
   /**
-   * creates a judge assignment
+   * creates a judge assignment for a contest
+   * @param contestId - the contest id
    * @param dto - the assignment details to create
    * @returns the created judge assignment
-   * @throws BadRequestException - when the contest id or judge id is missing
+   * @throws BadRequestException - when the judge id is missing
+   * @throws NotFoundException - when the contest does not exist
    * @throws ConflictException - when the judge is already assigned to the contest
    */
-  async create(dto: CreateJudgeAssignmentDto) {
-    if (!dto.contestId || !dto.judgeId) {
-      throw new BadRequestException('Contest ID and Judge ID are required');
+  async createForContest(contestId: string, dto: CreateJudgeAssignmentDto) {
+    await this.ensureContestExists(contestId);
+
+    if (!dto.judgeId) {
+      throw new BadRequestException('judge id is required');
     }
 
-    // Check if assignment already exists
-    const existing = await this.repository.findByContestAndJudge(dto.contestId, dto.judgeId);
+    const existing = await this.repository.findByContestAndJudge(
+      contestId,
+      dto.judgeId,
+    );
     if (existing) {
-      throw new ConflictException('Judge is already assigned to this contest');
+      throw new ConflictException('judge is already assigned to this contest');
     }
 
-    const assignment = await this.repository.create({
-      contestId: dto.contestId,
+    return this.repository.create({
+      contestId,
       judgeId: dto.judgeId,
       assignedAt: new Date(),
     });
-
-    return assignment;
   }
 
   /**
-   * returns all judge assignments
-   * @returns the full judge assignment list
-   */
-  async findAll() {
-    return await this.repository.findAll();
-  }
-
-  /**
-   * returns a judge assignment by id
+   * returns a judge assignment by id scoped to a contest
+   * @param contestId - the contest id
    * @param id - the judge assignment id
    * @returns the matching judge assignment
-   * @throws NotFoundException - when the assignment does not exist
+   * @throws NotFoundException - when the contest or assignment does not exist
    */
-  async findOne(id: string) {
+  async findOneForContest(contestId: string, id: string) {
+    await this.ensureContestExists(contestId);
+
     const assignment = await this.repository.findById(id);
-    if (!assignment) {
-      throw new NotFoundException(`Judge assignment with ID ${id} not found`);
+    if (!assignment || assignment.contestId !== contestId) {
+      throw new NotFoundException(`judge assignment with id ${id} not found`);
     }
+
     return assignment;
   }
 
   /**
-   * returns judge assignments for a contest
+   * returns judge assignments for a specific judge within a contest
    * @param contestId - the contest id
-   * @returns the contest judge assignments
-   */
-  async findByContest(contestId: string) {
-    return await this.repository.findByContestId(contestId);
-  }
-
-  /**
-   * returns judge assignments for a judge
    * @param judgeId - the judge user id
-   * @returns the judge assignments
+   * @returns the matching judge assignments
+   * @throws NotFoundException - when the contest does not exist
    */
-  async findByJudge(judgeId: string) {
-    return await this.repository.findByJudgeId(judgeId);
+  async findByJudgeForContest(contestId: string, judgeId: string) {
+    await this.ensureContestExists(contestId);
+
+    const assignment = await this.repository.findByContestAndJudge(
+      contestId,
+      judgeId,
+    );
+    return assignment ? [assignment] : [];
   }
 
   /**
-   * removes a judge assignment by id
-   * @param id - the judge assignment id
-   * @returns nothing
-   * @throws NotFoundException - when the assignment does not exist
-   */
-  async remove(id: string) {
-    const assignment = await this.repository.findById(id);
-    if (!assignment) {
-      throw new NotFoundException(`Judge assignment with ID ${id} not found`);
-    }
-
-    await this.repository.remove(id);
-  }
-
-  /**
-   * returns paginated judge assignments
+   * returns paginated judge assignments for a contest
+   * @param contestId - the contest id
    * @param queryDto - the pagination and filter options
    * @returns the paginated judge assignment list
+   * @throws NotFoundException - when the contest does not exist
    */
-  async findManyWithPagination(queryDto: QueryJudgeAssignmentDto) {
-    const page = queryDto?.page ?? 1;
-    const limit = queryDto?.limit ?? 10;
+  async findManyWithPaginationForContest(
+    contestId: string,
+    queryDto: QueryJudgeAssignmentDto,
+  ) {
+    await this.ensureContestExists(contestId);
 
-    return await this.repository.findManyWithPagination({
-      contestId: queryDto.contestId,
+    return this.repository.findManyWithPagination({
+      contestId,
       judgeId: queryDto.judgeId,
-      paginationOptions: { page, limit },
+      paginationOptions: {
+        page: queryDto?.page ?? 1,
+        limit: queryDto?.limit ?? 10,
+      },
     });
+  }
+
+  /**
+   * removes a judge assignment by id scoped to a contest
+   * @param contestId - the contest id
+   * @param id - the judge assignment id
+   * @returns nothing
+   * @throws NotFoundException - when the contest or assignment does not exist
+   */
+  async removeForContest(contestId: string, id: string) {
+    await this.findOneForContest(contestId, id);
+    await this.repository.remove(id);
   }
 
   /**
@@ -113,6 +123,14 @@ export class JudgeAssignmentsService {
    * @returns the number of judge assignments
    */
   async countByContest(contestId: string): Promise<number> {
-    return await this.repository.countByContestId(contestId);
+    return this.repository.countByContestId(contestId);
+  }
+
+  private async ensureContestExists(contestId: string) {
+    const contest = await this.contestRepo.findById(contestId);
+    if (!contest) {
+      throw new NotFoundException('contest not found');
+    }
+    return contest;
   }
 }

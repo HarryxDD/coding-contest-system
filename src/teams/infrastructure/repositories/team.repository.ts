@@ -63,6 +63,20 @@ export class TeamsRelationalRepository implements teamRepository {
     return entity ? TeamMapper.toDomain(entity) : null;
   }
 
+  async findByContestId(
+    contestId: string,
+    paginationOptions: IPaginationOptions,
+  ): Promise<Team[]> {
+    const entities = await this.teamsRepository.find({
+      where: { contestId },
+      skip: (paginationOptions.page - 1) * paginationOptions.limit,
+      take: paginationOptions.limit,
+      order: { createdAt: 'DESC' },
+    });
+
+    return entities.map((team) => TeamMapper.toDomain(team));
+  }
+
   async update(id: Team['id'], payload: Partial<Team>): Promise<Team | null> {
     const entity = await this.teamsRepository.findOne({ where: { id } });
     if (!entity) return null;
