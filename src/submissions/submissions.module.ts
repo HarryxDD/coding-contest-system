@@ -4,11 +4,12 @@ import { SubmissionsController } from './submissions.controller';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { TeamMembersInfrastructureModule } from '../team-members/infrastructure/infrastructure.module';
 import { ContestsModule } from '../contests/contests.module';
-import { TeamsModule } from '../teams/teams.module';
+import { TeamsInfrastructureModule } from '../teams/infrastructure/infrastructure.module';
 
 @Module({
-    imports: [InfrastructureModule, TeamMembersInfrastructureModule, ContestsModule, TeamsModule],
+    imports: [InfrastructureModule, TeamMembersInfrastructureModule, ContestsModule, TeamsInfrastructureModule],
     controllers: [SubmissionsController],
     providers: [SubmissionsService],
+    exports: [SubmissionsService],
 })
 export class SubmissionsModule { }
