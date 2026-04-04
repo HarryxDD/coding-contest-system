@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Request, HttpCode, HttpStatus, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Request, HttpCode, HttpStatus, ParseUUIDPipe, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { RolesGuard } from '../roles/roles.guard';
@@ -30,6 +31,9 @@ export class ContestsController {
      */
     @ApiBearerAuth()
     @UseGuards(JwtOrPatAuthGuard)
+    @UseInterceptors(CacheInterceptor)
+    @CacheKey('contests_list')
+    @CacheTTL(300000)
     @Get()
     async findAll(@Query() query: QueryContestDto): Promise<InfinityPaginationResponseDto<Contest>> {
         const page = query?.page ?? 1;

@@ -1,4 +1,6 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, Inject } from "@nestjs/common";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Cache } from "cache-manager";
 import { contestRepository } from "./infrastructure/contest.repository";
 import { CreateContestDto } from "./dto/create-contest.dto";
 import { QueryContestDto } from "./dto/query-contest.dto";
@@ -6,7 +8,10 @@ import { UpdateContestDto } from "./dto/update-contest.dto";
 
 @Injectable()
 export class ContestsService {
-    constructor(private readonly contestRepository: contestRepository) { }
+    constructor(
+        private readonly contestRepository: contestRepository,
+        @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    ) { }
 
     /**
      * creates a contest
@@ -17,16 +22,20 @@ export class ContestsService {
      */
     async create(createContestDto: CreateContestDto, organizerId: string) {
         if (new Date(createContestDto.startDate) >= new Date(createContestDto.endDate)) {
-            throw new BadRequestException('End date must be strictly after start date');
+            throw new BadRequestException('end date must be strictly after start date');
         }
 
-        return this.contestRepository.create({
+        const result = await this.contestRepository.create({
             ...createContestDto,
             organizerId: organizerId,
             startDate: new Date(createContestDto.startDate),
             endDate: new Date(createContestDto.endDate),
             submissionDeadline: new Date(createContestDto.submissionDeadline),
-        })
+        });
+
+        // invalidate contest list cache so new contest appears immediately
+        await this.cacheManager.del('contests_list');
+        return result;
     }
 
     /**
@@ -53,7 +62,7 @@ export class ContestsService {
      */
     async findOne(id: string) {
         const contest = await this.contestRepository.findById(id);
-        if (!contest) throw new NotFoundException('Contest not found');
+        if (!contest) throw new NotFoundException('contest not found');
 
         return contest;
     }
@@ -70,17 +79,20 @@ export class ContestsService {
     async update(id: string, updateDto: UpdateContestDto, requestingUserId: string, isAdmin: boolean) {
         const contest = await this.findOne(id);
 
-        // Only the exact organizer or an Admin can edit the contest
         if (contest.organizerId !== requestingUserId && !isAdmin) {
-            throw new ForbiddenException('You are not authorized to edit this contest');
+            throw new ForbiddenException('you are not authorized to edit this contest');
         }
 
-        return this.contestRepository.update(id, {
+        const result = await this.contestRepository.update(id, {
             ...updateDto,
             startDate: updateDto.startDate ? new Date(updateDto.startDate) : undefined,
             endDate: updateDto.endDate ? new Date(updateDto.endDate) : undefined,
             submissionDeadline: updateDto.submissionDeadline ? new Date(updateDto.submissionDeadline) : undefined,
         });
+
+        // invalidate contest list cache so updated data is reflected immediately
+        await this.cacheManager.del('contests_list');
+        return result;
     }
 
     /**
@@ -94,10 +106,13 @@ export class ContestsService {
     async remove(id: string, requestingUserId: string, isAdmin: boolean) {
         const contest = await this.findOne(id);
 
-        // Only the exact organizer or an Admin can delete
         if (contest.organizerId !== requestingUserId && !isAdmin) {
-            throw new ForbiddenException('You are not authorized to delete this contest');
+            throw new ForbiddenException('you are not authorized to delete this contest');
         }
+
         await this.contestRepository.remove(id);
+
+        // invalidate contest list cache after deletion
+        await this.cacheManager.del('contests_list');
     }
 }

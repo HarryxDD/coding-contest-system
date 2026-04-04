@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CacheModule } from '@nestjs/cache-manager';
 import databaseConfig from './database/config/database.config';
 import appConfig from './config/app.config';
 import { ConfigModule } from '@nestjs/config';
@@ -30,6 +31,10 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
       load: [databaseConfig, appConfig],
       envFilePath: ['.env'],
     }),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 300000, // 5 minutes
+    }),
     infrastructureDatabaseModule,
     AuthModule,
     UsersModule,
@@ -44,4 +49,3 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   ],
 })
 export class AppModule {}
-
