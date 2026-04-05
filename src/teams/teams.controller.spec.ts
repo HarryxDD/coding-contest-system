@@ -2,6 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../app.module';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { UserEntity } from '../users/infrastructure/entities/user.entity';
+import { Repository } from 'typeorm';
+import { RoleEnum } from '../roles/roles.enum';
 
 describe('TeamsController', () => {
   let app: INestApplication;
@@ -11,6 +15,7 @@ describe('TeamsController', () => {
   let otherParticipantToken: string;
   let testContestId: string;
   let createdTeamId: string;
+  let userRepository: Repository<UserEntity>;
 
   const randomSuffix = Math.floor(Math.random() * 100000);
 
@@ -49,17 +54,30 @@ describe('TeamsController', () => {
       .post('/auth/register')
       .send(otherParticipant);
 
-    // login as seeded admin — admin can create contests (POST /contests requires organizer or admin)
+    userRepository = moduleFixture.get<Repository<UserEntity>>(
+      getRepositoryToken(UserEntity)
+    );
+
+    const organizer = {
+      username: `teamspec_admin_${randomSuffix}`,
+      email: `teamspec_admin_${randomSuffix}@example.com`,
+      password: 'password123',
+    };
+
+    const orgRegRes = await request(app.getHttpServer()).post('/auth/register').send(organizer);
+    await userRepository.update(orgRegRes.body.user.id, { role: RoleEnum.ORGANIZER });
+
     const adminRes = await request(app.getHttpServer())
       .post('/auth/login')
-      .send({ email: 'admin@example.com', password: 'admin123' });
-    adminToken = adminRes.body.token;
+      .send({ email: organizer.email, password: organizer.password });
+    adminToken = adminRes.body.token || adminRes.body.access_token || adminRes.body.accessToken;
 
     // create a contest so we have a valid contest id to attach teams to
     const contestRes = await request(app.getHttpServer())
       .post('/contests')
       .set('Authorization', `Bearer ${adminToken}`)
       .send(contestPayload);
+    if (contestRes.status !== 201) console.error("CONTEST_CREATE", contestRes.body);
     testContestId = contestRes.body.id;
 
     // get participant tokens
@@ -108,8 +126,9 @@ describe('TeamsController', () => {
       const response = await request(app.getHttpServer())
         .post('/teams')
         .set('Authorization', `Bearer ${participantToken}`)
-        .send(teamPayload)
-        .expect(201);
+        .send(teamPayload);
+      if (response.status !== 201) console.error("TEAMS_DEBUG", response.body);
+      expect(response.status).toBe(201);
 
       expect(response.body).toHaveProperty('id');
       expect(response.body.name).toEqual(teamPayload.name);

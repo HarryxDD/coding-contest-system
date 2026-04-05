@@ -13,26 +13,30 @@ import { InfinityPaginationResponseDto } from '../utils/dto/infinity-pagination-
 import { Submission } from './domain/submission';
 
 @ApiTags('Submissions')
-@Controller('submissions')
+@ApiBearerAuth()
+@UseGuards(JwtOrPatAuthGuard)
+@Controller('contests/:contestId/submissions')
 export class SubmissionsController {
-    constructor(private readonly submissionsService: SubmissionsService) { }
+  constructor(private readonly submissionsService: SubmissionsService) {}
 
-    /**
-     * returns paginated submissions
-     * @param query - the pagination and filter options
-     * @returns the paginated submission list
-     */
-    @ApiBearerAuth()
-    @UseGuards(JwtOrPatAuthGuard)
-    @Get()
-    async findAll(@Query() query: QuerySubmissionDto): Promise<InfinityPaginationResponseDto<Submission>> {
-        const page = query?.page ?? 1;
-        let limit = query?.limit ?? 10;
-        if (limit > 50) limit = 50;
+  /**
+   * returns paginated submissions for a contest
+   * @param contestId - the contest id
+   * @param query - the pagination and filter options
+   * @returns the paginated submission list
+   */
+  @Get()
+  async findAll(
+    @Param('contestId', ParseUUIDPipe) contestId: string,
+    @Query() query: QuerySubmissionDto,
+  ): Promise<InfinityPaginationResponseDto<Submission>> {
+    const page = query?.page ?? 1;
+    let limit = query?.limit ?? 10;
+    if (limit > 50) limit = 50;
 
-        const data = await this.submissionsService.findAll(query);
-        return infinityPagination(data, { page, limit });
-    }
+    const data = await this.submissionsService.findAllForContest(contestId, query);
+    return infinityPagination(data, { page, limit });
+  }
 
     /**
      * returns a submission by id
@@ -46,20 +50,30 @@ export class SubmissionsController {
         return this.submissionsService.findOne(id);
     }
 
-    /**
-     * creates a submission
-     * @param createSubmissionDto - the submission details to create
-     * @param req - the authenticated request
-     * @returns the created submission
-     */
-    @ApiBearerAuth()
-    @UseGuards(JwtOrPatAuthGuard, RolesGuard)
-    @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
-    @Post()
-    create(@Body() createSubmissionDto: CreateSubmissionDto, @Request() req) {
-        const isAdmin = req.user.role === RoleEnum.ADMIN;
-        return this.submissionsService.create(createSubmissionDto, req.user.id, isAdmin);
-    }
+  /**
+   * creates a submission for a contest
+   * @param contestId - the contest id
+   * @param createSubmissionDto - the submission details to create
+   * @param req - the authenticated request
+   * @returns the created submission
+   */
+  @UseGuards(RolesGuard)
+  @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
+  @HttpCode(HttpStatus.CREATED)
+  @Post()
+  create(
+    @Param('contestId', ParseUUIDPipe) contestId: string,
+    @Body() createSubmissionDto: CreateSubmissionDto,
+    @Request() req,
+  ) {
+    const isAdmin = req.user.role === RoleEnum.ADMIN;
+    return this.submissionsService.createForContest(
+      contestId,
+      createSubmissionDto,
+      req.user.id,
+      isAdmin,
+    );
+  }
 
     /**
      * updates a submission by id
@@ -94,3 +108,28 @@ export class SubmissionsController {
     }
 }
 
+  /**
+   * removes a submission by id for a contest
+   * @param contestId - the contest id
+   * @param id - the submission id
+   * @param req - the authenticated request
+   * @returns nothing
+   */
+  @UseGuards(RolesGuard)
+  @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete(':id')
+  remove(
+    @Param('contestId', ParseUUIDPipe) contestId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Request() req,
+  ) {
+    const isAdmin = req.user.role === RoleEnum.ADMIN;
+    return this.submissionsService.removeForContest(
+      contestId,
+      id,
+      req.user.id,
+      isAdmin,
+    );
+  }
+}

@@ -2,6 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../app.module';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { UserEntity } from '../users/infrastructure/entities/user.entity';
+import { Repository } from 'typeorm';
+import { RoleEnum } from '../roles/roles.enum';
 
 describe('TeamMembersController', () => {
   let app: INestApplication;
@@ -12,6 +16,7 @@ describe('TeamMembersController', () => {
   let thirdParticipantToken: string;
   let testTeamId: string;
   let participant1MemberId: string;
+  let userRepository: Repository<UserEntity>;
 
   const randomSuffix = Math.floor(Math.random() * 100000);
 
@@ -52,11 +57,23 @@ describe('TeamMembersController', () => {
       .post('/auth/register')
       .send(participant3);
 
-    // login as the seeded admin to create a contest with a tight team size
+    userRepository = moduleFixture.get<Repository<UserEntity>>(
+      getRepositoryToken(UserEntity)
+    );
+
+    const organizer = {
+      username: `tmspec_admin_${randomSuffix}`,
+      email: `tmspec_admin_${randomSuffix}@example.com`,
+      password: 'password123',
+    };
+
+    const orgRegRes = await request(app.getHttpServer()).post('/auth/register').send(organizer);
+    await userRepository.update(orgRegRes.body.user.id, { role: RoleEnum.ADMIN });
+
     const adminRes = await request(app.getHttpServer())
       .post('/auth/login')
-      .send({ email: 'admin@example.com', password: 'admin123' });
-    adminToken = adminRes.body.token;
+      .send({ email: organizer.email, password: organizer.password });
+    adminToken = adminRes.body.token || adminRes.body.access_token || adminRes.body.accessToken;
 
     // maxTeamSize: 2 means after participant1 creates the team (auto-joined),
     // only one more spot is left — used to exercise the full-team 400 scenario
@@ -98,7 +115,7 @@ describe('TeamMembersController', () => {
 
     // fetch participant1's membership record so delete tests have a real id to target
     const membersRes = await request(app.getHttpServer())
-      .get('/team-members')
+      .get(`/teams/${testTeamId}/members`)
       .query({ filters: JSON.stringify({ teamId: testTeamId }) })
       .set('Authorization', `Bearer ${participantToken}`);
     participant1MemberId = membersRes.body.data[0]?.id;
@@ -114,7 +131,7 @@ describe('TeamMembersController', () => {
     // participant1 is already a member of the team (auto-joined on creation) — service should throw 409
     it('returns 409 when the user is already a member of the team', () => {
       return request(app.getHttpServer())
-        .post('/team-members')
+        .post(`/teams/${testTeamId}/members`)
         .set('Authorization', `Bearer ${participantToken}`)
         .send({ teamId: testTeamId }) // no userId, so service uses the requesting user's id
         .expect(409);
@@ -124,13 +141,13 @@ describe('TeamMembersController', () => {
     it('returns 400 when the team has already reached its max size', async () => {
       // participant2 joins (2/2 — now full)
       await request(app.getHttpServer())
-        .post('/team-members')
+        .post(`/teams/${testTeamId}/members`)
         .set('Authorization', `Bearer ${otherParticipantToken}`)
         .send({ teamId: testTeamId });
 
       // participant3 tries to join — team is at capacity so service throws 400
       return request(app.getHttpServer())
-        .post('/team-members')
+        .post(`/teams/${testTeamId}/members`)
         .set('Authorization', `Bearer ${thirdParticipantToken}`)
         .send({ teamId: testTeamId })
         .expect(400);
@@ -141,7 +158,7 @@ describe('TeamMembersController', () => {
     // participant2 attempts to remove participant1's membership — only the member or admin can do that
     it('returns 403 when the requesting user is not the owner of the membership', () => {
       return request(app.getHttpServer())
-        .delete(`/team-members/${participant1MemberId}`)
+        .delete(`/teams/${testTeamId}/members/${participant1MemberId}`)
         .set('Authorization', `Bearer ${otherParticipantToken}`)
         .expect(403);
     });

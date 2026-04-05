@@ -57,6 +57,23 @@ export class TeamsService {
   }
 
   /**
+   * returns paginated teams for a contest
+   * @param contestId - the contest id
+   * @param queryDto - the pagination options
+   * @returns the paginated team list
+   * @throws NotFoundException - when the contest does not exist
+   */
+  async findByContestId(contestId: string, queryDto: QueryTeamDto) {
+    const contest = await this.contestRepo.findById(contestId);
+    if (!contest) throw new NotFoundException('contest not found');
+
+    return this.teamRepo.findByContestId(contestId, {
+      page: queryDto.page ?? 1,
+      limit: queryDto.limit ?? 10,
+    });
+  }
+
+  /**
    * returns a team by id with members
    * @param id - the team id
    * @returns the matching team
@@ -64,7 +81,7 @@ export class TeamsService {
    */
   async findOne(id: string) {
     const team = await this.teamRepo.findById(id);
-    if (!team) throw new NotFoundException('Team not found');
+    if (!team) throw new NotFoundException('team not found');
 
     const members = await this.teamMemberRepo.findByTeamId(id);
     team.members = members.map((member) => ({
@@ -118,7 +135,7 @@ export class TeamsService {
 
     const creator = await this.teamMemberRepo.findFirstMemberByTeamId(teamId);
     if (!creator || creator.userId !== requestingUserId) {
-      throw new ForbiddenException('You are not authorized to modify this team');
+      throw new ForbiddenException('you are not authorized to modify this team');
     }
 
     return team;

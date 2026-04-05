@@ -11,9 +11,11 @@
 
 ## Overview
 
-This project is a NestJS backend for managing coding contests and hackathons. It covers user authentication, contests, teams, team members, submissions, judge assignments, judging criteria, and scores.
+This is a NestJS REST API for managing coding contests and hackathons. The system handles user authentication, contest management, team formation, project submissions, judge assignments, scoring criteria, and score recording.
 
-The project uses PostgreSQL as the relational database and TypeORM as the ORM layer.
+Authentication supports both JWT Bearer tokens and Personal Access Tokens (PATs). PATs allow users to generate scoped tokens with specific permissions that can be shared with external tools or integrations.
+
+The project uses PostgreSQL as the database and TypeORM as the ORM layer. It follows a hexagonal architecture where business logic is fully decoupled from the database layer.
 
 ## Tech stack
 
@@ -21,25 +23,18 @@ The project uses PostgreSQL as the relational database and TypeORM as the ORM la
 - TypeScript
 - PostgreSQL
 - TypeORM
-- JWT authentication
-- Jest and Supertest for testing
+- Passport.js with JWT strategy
+- class-validator and class-transformer for request validation
+- Jest and Supertest for E2E testing
+- Swagger for API documentation
 
 ## Prerequisites
 
-Install the following before running the project:
-
 - Node.js 16 or newer
 - npm 8 or newer
-- PostgreSQL
-
-Docker is optional. You can either:
-
-- run PostgreSQL on your own machine, or
-- run PostgreSQL in Docker and connect the API to it
+- PostgreSQL (local or via Docker)
 
 ## Installation
-
-Install dependencies:
 
 ```bash
 npm install
@@ -47,9 +42,11 @@ npm install
 
 ## Environment configuration
 
-The application reads configuration from a `.env` file in the project root.
+Copy `env-example` to `.env` and adjust the values for your setup:
 
-You can copy `env-example` and adjust it for your setup.
+```bash
+cp env-example .env
+```
 
 Example local configuration:
 
@@ -86,59 +83,37 @@ AUTH_CONFIRM_EMAIL_SECRET=secret_for_confirm_email
 AUTH_CONFIRM_EMAIL_TOKEN_EXPIRES_IN=1d
 ```
 
-If you run PostgreSQL through Docker Compose, set:
-
-```env
-DATABASE_HOST=postgres
-```
-
-instead of `localhost`.
+If you run PostgreSQL through Docker Compose, set `DATABASE_HOST=postgres` instead of `localhost`.
 
 ## Database setup
 
-This repository includes seed scripts, but it does not currently include checked-in migration files. In development, the project relies on TypeORM schema synchronization when `DATABASE_SYNCHRONIZE=true`.
+The project uses TypeORM schema synchronization in development (`DATABASE_SYNCHRONIZE=true`), so no migration files need to be run manually. The schema is created automatically when the app starts.
 
-### Option 1: run PostgreSQL locally
+### Option 1: local PostgreSQL
 
-1. Create a PostgreSQL database:
+Create the database manually:
 
 ```sql
 CREATE DATABASE contest_system;
 ```
 
-2. Make sure your `.env` file points to your local PostgreSQL instance.
+Then make sure your `.env` points to your local PostgreSQL instance.
 
-### Option 2: run PostgreSQL with Docker
+### Option 2: Docker Compose
 
-The repository includes a `docker-compose.yaml` file. It can be used to run PostgreSQL in Docker instead of installing PostgreSQL directly on your machine.
-
-Before starting it, make sure your `.env` file uses:
-
-```env
-DATABASE_HOST=postgres
-DATABASE_PORT=5432
-DATABASE_USERNAME=root
-DATABASE_PASSWORD=secret
-DATABASE_NAME=contest_system
-```
-
-Then start the database service:
+The repository includes a `docker-compose.yaml` file. Start PostgreSQL with:
 
 ```bash
 docker compose up -d postgres
 ```
 
-An `adminer` service is also included in the compose file if you want a simple browser-based database UI:
+An Adminer instance is also available for browsing the database in a browser:
 
 ```bash
 docker compose up -d adminer
 ```
 
-Adminer will be available at:
-
-```http
-http://localhost:8080
-```
+Adminer runs at `http://localhost:8080`.
 
 ## Seed data
 
@@ -148,26 +123,17 @@ Populate the database with example data:
 npm run seed:run
 ```
 
-The seed data includes:
-
-- users
-- contests
-- teams
-- team members
-- submissions
-- judge assignments
-- judging criteria
-- scores
+The seed data covers users, contests, teams, team members, submissions, judge assignments, judging criteria, and scores. This is enough to test all API endpoints without creating data manually.
 
 ## Running the API
 
-Start the API in development mode:
+Development mode with hot reload:
 
 ```bash
 npm run start:dev
 ```
 
-Build and run in production mode:
+Production build:
 
 ```bash
 npm run build
@@ -178,33 +144,27 @@ npm run start:prod
 
 The app listens on port `3000` by default.
 
-Base URL:
+| | URL |
+|---|---|
+| Base | `http://localhost:3000` |
+| API prefix | `http://localhost:3000/api` |
+| Swagger docs | `http://localhost:3000/docs` |
 
-```http
-http://localhost:3000
-```
-
-API prefix:
-
-```http
-http://localhost:3000/api
-```
-
-Swagger documentation:
-
-```http
-http://localhost:3000/docs
-```
+All endpoints are documented and testable through the Swagger UI. You can authorize using a JWT token from `POST /auth/login` or a PAT from `POST /pat`.
 
 ## Testing
 
-Run the test suite with:
+Run tests with coverage report:
 
 ```bash
 npm run test
 ```
 
-The project uses Jest and Supertest for API-level tests.
+Run a specific test file:
+
+```bash
+npm run test -- teams.controller.spec.ts
+```
 
 ## NestJS Best Practices
 
@@ -232,10 +192,7 @@ Refer to the official NestJS documentation for comprehensive guidance on archite
 
 ## Notes
 
-- This repository contains a Docker Compose file, so Docker support is available as an option.
-- Docker is not required if you already have PostgreSQL running locally.
-- The project is intended for local development and course evaluation.
-- No separate frontend or auxiliary service is included in this repository.
+To run tests successfully, make sure a PostgreSQL instance is running and the `.env` file is configured correctly before starting the test suite.
 
 ## License
 

@@ -13,7 +13,6 @@
 ### Notes
 - Professor mentioned marks will be deducted for the related work section but can be recovered in the final meeting with a corrected example
 
-
 ## Meeting 2.
 * **DATE:** 19.02.2026, 10:30 - 10:50 AM
 * **PARTICIPANTS:** Vu Truong, Mubeen Khan, Eshmam Rayed, Muhammad Abdur Rehman
@@ -27,9 +26,22 @@
 ### Notes
 - Prof was generally happy with the database structure and relationships
 
-
 ## Meeting 3.
 * **DATE:** 11.03.2026, 10:30 - 11:00 AM
+* **PARTICIPANTS:** Vu Truong, Mubeen Khan, Eshmam Rayed, Muhammad Abdur Rehman
+* **TEACHER:** Iván Sánchez Milara
+
+### Action points
+- Restructure API URLs to follow a proper resource hierarchy, for example team members should sit under `/teams/:id/members` rather than as a flat resource
+- Judge assignments should be nested under contests rather than exposed as a separate root-level resource
+- Add a link to NestJS best practices in the project documentation
+- Document utility functions and shared modules properly
+
+### Notes
+- Professor reviewed the resource table and pointed out that the hierarchy was too flat with most resources connecting directly to root
+
+## Meeting 4.
+* **DATE:** 16.04.2026, 09:30 - 10:00 AM
 * **PARTICIPANTS:** Vu Truong, Mubeen Khan, Eshmam Rayed, Muhammad Abdur Rehman
 * **TEACHER:** Iván Sánchez Milara
 
@@ -38,25 +50,6 @@
 
 ### Notes
 *Add here notes that you consider important. This is not mandatory*
-check resource hierarchy (tree diagram):
-- /teams/<team-id>/members POST
-- teams and team member should be together
-- contests/:id/assignments -> don't need another resource for judge assignments
-- provide a link with good practices on NestJS
-- document (utils)
-
-
-## Meeting 4.
-* **DATE:**
-* **PARTICIPANTS:**
-* **TEACHER:**
-
-### Action points
-*List here the actions points discussed with assistants*
-
-### Notes
-*Add here notes that you consider important. This is not mandatory*
-
 
 ## Midterm meeting
 * **DATE:**
@@ -69,7 +62,6 @@ check resource hierarchy (tree diagram):
 ### Notes
 *Add here notes that you consider important. This is not mandatory*
 
-
 ## Final meeting
 * **DATE:**
 * **PARTICIPANTS:**
@@ -80,6 +72,3 @@ check resource hierarchy (tree diagram):
 
 ### Notes
 *Add here notes that you consider important. This is not mandatory*
-
-
-

@@ -1,16 +1,16 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Param,
+  Controller,
   Delete,
-  UseGuards,
-  Query,
-  Request,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
   ParseUUIDPipe,
+  Post,
+  Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
@@ -25,55 +25,64 @@ import { InfinityPaginationResponseDto } from '../utils/dto/infinity-pagination-
 import { TeamMember } from './domain/team-member';
 
 @ApiTags('Team Members')
-@Controller('team-members')
+@ApiBearerAuth()
+@UseGuards(JwtOrPatAuthGuard)
+@Controller('teams/:teamId/members')
 export class TeamMembersController {
   constructor(private readonly teamMembersService: TeamMembersService) {}
 
   /**
-   * returns paginated team memberships
+   * returns paginated members for a team
+   * @param teamId - the team id
    * @param query - the pagination and filter options
    * @returns the paginated team membership list
    */
-  @ApiBearerAuth()
-  @UseGuards(JwtOrPatAuthGuard)
   @Get()
   async findAll(
+    @Param('teamId', ParseUUIDPipe) teamId: string,
     @Query() query: QueryTeamMemberDto,
   ): Promise<InfinityPaginationResponseDto<TeamMember>> {
     const page = query?.page ?? 1;
     let limit = query?.limit ?? 10;
     if (limit > 50) limit = 50;
 
-    const data = await this.teamMembersService.findAll(query);
+    const data = await this.teamMembersService.findAllForTeam(teamId, query);
     return infinityPagination(data, { page, limit });
   }
 
   /**
    * returns a team membership by id
+   * @param teamId - the team id
    * @param id - the team membership id
    * @returns the matching team membership
    */
-  @ApiBearerAuth()
-  @UseGuards(JwtOrPatAuthGuard)
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.teamMembersService.findOne(id);
+  findOne(
+    @Param('teamId', ParseUUIDPipe) teamId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.teamMembersService.findOneForTeam(teamId, id);
   }
 
   /**
-   * creates a team membership
+   * adds a member to a team
+   * @param teamId - the team id
    * @param createTeamMemberDto - the team membership details
    * @param req - the authenticated request
    * @returns the created team membership
    */
-  @ApiBearerAuth()
-  @UseGuards(JwtOrPatAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
   @HttpCode(HttpStatus.CREATED)
   @Post()
-  create(@Body() createTeamMemberDto: CreateTeamMemberDto, @Request() req) {
+  create(
+    @Param('teamId', ParseUUIDPipe) teamId: string,
+    @Body() createTeamMemberDto: CreateTeamMemberDto,
+    @Request() req,
+  ) {
     const isAdmin = req.user.role === RoleEnum.ADMIN;
-    return this.teamMembersService.create(
+    return this.teamMembersService.createForTeam(
+      teamId,
       createTeamMemberDto,
       req.user.id,
       isAdmin,
@@ -81,18 +90,20 @@ export class TeamMembersController {
   }
 
   /**
-   * removes a team membership by id
+   * removes a member from a team
+   * @param teamId - the team id
    * @param id - the team membership id
    * @param req - the authenticated request
    * @returns nothing
    */
-  @ApiBearerAuth()
-  @UseGuards(JwtOrPatAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
+  remove(
+    @Param('teamId', ParseUUIDPipe) teamId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Request() req,
+  ) {
     const isAdmin = req.user.role === RoleEnum.ADMIN;
-    return this.teamMembersService.remove(id, req.user.id, isAdmin);
+    return this.teamMembersService.removeForTeam(teamId, id, req.user.id, isAdmin);
   }
 }
-

@@ -11,11 +11,17 @@ import { QueryContestDto } from './dto/query-contest.dto';
 import { infinityPagination } from '../utils/infinity-pagination';
 import { InfinityPaginationResponseDto } from '../utils/dto/infinity-pagination-response.dto';
 import { Contest } from './domain/contest';
+import { QueryTeamDto } from '../teams/dto/query-team.dto';
+import { Team } from '../teams/domain/team';
+import { TeamsService } from '../teams/teams.service';
 
 @ApiTags('Contests')
 @Controller('contests')
 export class ContestsController {
-    constructor(private readonly contestsService: ContestsService) { }
+    constructor(
+        private readonly contestsService: ContestsService,
+        private readonly teamsService: TeamsService,
+    ) { }
 
     /**
      * returns paginated contests
@@ -45,6 +51,27 @@ export class ContestsController {
     }
 
     /**
+     * returns paginated teams for a contest
+     * @param contestId - the contest id
+     * @param query - the pagination options
+     * @returns the paginated team list
+     */
+    @ApiBearerAuth()
+    @UseGuards(JwtOrPatAuthGuard)
+    @Get(':id/teams')
+    async findTeams(
+        @Param('id', ParseUUIDPipe) contestId: string,
+        @Query() query: QueryTeamDto,
+    ): Promise<InfinityPaginationResponseDto<Team>> {
+        const page = query?.page ?? 1;
+        let limit = query?.limit ?? 10;
+        if (limit > 50) limit = 50;
+
+        const data = await this.teamsService.findByContestId(contestId, query);
+        return infinityPagination(data, { page, limit });
+    }
+
+    /**
      * creates a contest for the authenticated organizer
      * @param createContestDto - the contest details to create
      * @param req - the authenticated request
@@ -55,7 +82,6 @@ export class ContestsController {
     @Roles(RoleEnum.ORGANIZER, RoleEnum.ADMIN)
     @Post()
     create(@Body() createContestDto: CreateContestDto, @Request() req) {
-        // Current user as organizer
         return this.contestsService.create(createContestDto, req.user.id);
     }
 
@@ -72,7 +98,6 @@ export class ContestsController {
     @Patch(':id')
     update(@Param('id', ParseUUIDPipe) id: string, @Body() updateContestDto: UpdateContestDto, @Request() req) {
         const isAdmin = req.user.role === RoleEnum.ADMIN;
-
         return this.contestsService.update(id, updateContestDto, req.user.id, isAdmin);
     }
 
@@ -89,7 +114,6 @@ export class ContestsController {
     @HttpCode(HttpStatus.NO_CONTENT)
     remove(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
         const isAdmin = req.user.role === RoleEnum.ADMIN;
-
         return this.contestsService.remove(id, req.user.id, isAdmin);
     }
 }
