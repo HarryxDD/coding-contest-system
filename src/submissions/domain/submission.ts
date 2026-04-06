@@ -1,6 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { StatusEnum } from '../infrastructure/entities/submission.entity';
 
+export class SubmissionLinks {
+  @ApiProperty()
+  self: string;
+
+  @ApiProperty()
+  team: string;
+
+  @ApiProperty()
+  contest: string;
+
+  @ApiProperty()
+  scores: string;
+}
+
 export class Submission {
   @ApiProperty({ type: String, description: 'UUID of the submission' })
   id: string;
@@ -34,4 +48,7 @@ export class Submission {
 
   @ApiProperty()
   updatedAt: Date;
+
+  @ApiProperty({ type: () => SubmissionLinks })
+  links: SubmissionLinks;
 }

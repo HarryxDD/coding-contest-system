@@ -15,6 +15,15 @@ export class SubmissionMapper {
         domainEntity.status = raw.status;
         domainEntity.submittedAt = raw.submittedAt;
         domainEntity.updatedAt = raw.updatedAt;
+
+        // hypermedia links for client navigation
+        domainEntity.links = {
+            self: `/contests/${raw.contestId}/submissions/${raw.id}`,
+            team: `/teams/${raw.teamId}`,
+            contest: `/contests/${raw.contestId}`,
+            scores: `/submissions/${raw.id}/scores`,
+        };
+
         return domainEntity;
     }
 
