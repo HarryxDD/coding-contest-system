@@ -17,6 +17,7 @@
     "seed:run": "ts-node -r tsconfig-paths/register ./src/database/seeds/relational/run-seed.ts"
   },
   "dependencies": {
+    "@nestjs/cache-manager": "^3.1.0",
     "@nestjs/common": "11.1.6",
     "@nestjs/config": "4.0.2",
     "@nestjs/core": "11.1.6",
