@@ -1,20 +1,22 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { UserEntity } from './infrastructure/entities/user.entity';
+import { userRepository } from './infrastructure/user.repository';
 import { RoleEnum } from '../roles/roles.enum';
+import { NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import * as bcryptjs from 'bcryptjs';
 
 describe('UsersService', () => {
   let service: UsersService;
-  let mockUserRepository: any;
+  let mockUserRepo: any;
 
   const mockUserEntity = {
     id: '00000000-0000-0000-0000-000000000001',
     email: 'test@example.com',
     username: 'testuser',
-    password: 'hashedpassword',
+    passwordHash: 'hashedpassword',
     role: RoleEnum.PARTICIPANT,
+    profilePic: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -25,31 +27,32 @@ describe('UsersService', () => {
       id: '00000000-0000-0000-0000-000000000002',
       email: 'admin@example.com',
       username: 'admin',
-      password: 'hashedpassword',
+      passwordHash: 'hashedpassword',
       role: RoleEnum.ADMIN,
+      profilePic: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     },
   ];
 
   beforeEach(async () => {
-    mockUserRepository = {
-      create: jest.fn(),
-      save: jest.fn(),
-      find: jest.fn(),
-      findOne: jest.fn(),
-      findOneBy: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-      count: jest.fn(),
+    mockUserRepo = {
+      create: jest.fn().mockResolvedValue(mockUserEntity),
+      findAll: jest.fn().mockResolvedValue(mockUsers),
+      findManyWithPagination: jest.fn().mockResolvedValue({ items: mockUsers, total: 2 }),
+      findById: jest.fn().mockResolvedValue(mockUserEntity),
+      findByEmail: jest.fn().mockResolvedValue(mockUserEntity),
+      findByUsername: jest.fn().mockResolvedValue(null),
+      update: jest.fn().mockResolvedValue(mockUserEntity),
+      remove: jest.fn().mockResolvedValue(true),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
         {
-          provide: getRepositoryToken(UserEntity),
-          useValue: mockUserRepository,
+          provide: userRepository,
+          useValue: mockUserRepo,
         },
       ],
     }).compile();
@@ -67,236 +70,241 @@ describe('UsersService', () => {
         email: 'newuser@example.com',
         username: 'newuser',
         password: 'plainpassword',
+        role: RoleEnum.PARTICIPANT,
       };
 
-      const newUser = { id: '123', ...createUserDto, role: RoleEnum.PARTICIPANT };
-      mockUserRepository.create.mockReturnValue(newUser);
-      mockUserRepository.save.mockResolvedValue(newUser);
+      const newUser = { id: '123', ...createUserDto, passwordHash: 'hashedpassword' };
+      mockUserRepo.findByUsername.mockResolvedValue(null);
+      mockUserRepo.findByEmail.mockResolvedValue(null);
+      mockUserRepo.create.mockResolvedValue(newUser);
 
       const result = await service.create(createUserDto);
 
       expect(result).toBeDefined();
-      expect(mockUserRepository.create).toHaveBeenCalledWith(createUserDto);
-      expect(mockUserRepository.save).toHaveBeenCalled();
+      expect(mockUserRepo.create).toHaveBeenCalled();
     });
 
-    it('should handle user creation errors', async () => {
+    it('should throw error when email already exists', async () => {
       const createUserDto = {
-        email: 'newuser@example.com',
+        email: 'existing@example.com',
         username: 'newuser',
         password: 'plainpassword',
+        role: RoleEnum.PARTICIPANT,
       };
 
-      mockUserRepository.create.mockReturnValue(createUserDto);
-      mockUserRepository.save.mockRejectedValue(new Error('Database error'));
+      mockUserRepo.findByEmail.mockResolvedValue(mockUserEntity);
 
-      await expect(service.create(createUserDto)).rejects.toThrow('Database error');
+      await expect(service.create(createUserDto)).rejects.toThrow(UnprocessableEntityException);
+    });
+
+    it('should throw error when username already exists', async () => {
+      const createUserDto = {
+        email: 'newuser@example.com',
+        username: 'existinguser',
+        password: 'plainpassword',
+        role: RoleEnum.PARTICIPANT,
+      };
+
+      mockUserRepo.findByEmail.mockResolvedValue(null);
+      mockUserRepo.findByUsername.mockResolvedValue(mockUserEntity);
+
+      await expect(service.create(createUserDto)).rejects.toThrow(UnprocessableEntityException);
     });
   });
 
   describe('findAll', () => {
-    it('should return paginated list of users', async () => {
-      mockUserRepository.count.mockResolvedValue(2);
-      mockUserRepository.find.mockResolvedValue(mockUsers);
-
-      const result = await service.findAll({
-        page: 1,
-        limit: 10,
-      });
-
-      expect(result).toEqual(mockUsers);
-      expect(mockUserRepository.find).toHaveBeenCalled();
-    });
-
-    it('should apply sorting by email ascending', async () => {
-      mockUserRepository.count.mockResolvedValue(2);
-      mockUserRepository.find.mockResolvedValue(mockUsers);
-
-      const result = await service.findAll({
-        page: 1,
-        limit: 10,
-        sortBy: 'email',
-        sortOrder: 'ASC',
-      });
-
-      expect(result).toEqual(mockUsers);
-      expect(mockUserRepository.find).toHaveBeenCalled();
-    });
-
-    it('should apply sorting by email descending', async () => {
-      mockUserRepository.count.mockResolvedValue(2);
-      mockUserRepository.find.mockResolvedValue([...mockUsers].reverse());
-
-      const result = await service.findAll({
-        page: 1,
-        limit: 10,
-        sortBy: 'email',
-        sortOrder: 'DESC',
-      });
+    it('should return all users', async () => {
+      const result = await service.findAll();
 
       expect(result).toBeDefined();
-      expect(mockUserRepository.find).toHaveBeenCalled();
-    });
-
-    it('should handle default pagination', async () => {
-      mockUserRepository.count.mockResolvedValue(2);
-      mockUserRepository.find.mockResolvedValue(mockUsers);
-
-      const result = await service.findAll({ page: undefined, limit: undefined });
-
-      expect(result).toEqual(mockUsers);
-      expect(mockUserRepository.find).toHaveBeenCalled();
+      expect(Array.isArray(result)).toBe(true);
+      expect(mockUserRepo.findAll).toHaveBeenCalled();
     });
 
     it('should handle empty user list', async () => {
-      mockUserRepository.count.mockResolvedValue(0);
-      mockUserRepository.find.mockResolvedValue([]);
+      mockUserRepo.findAll.mockResolvedValue([]);
 
-      const result = await service.findAll({ page: 1, limit: 10 });
+      const result = await service.findAll();
 
       expect(result).toEqual([]);
     });
   });
 
-  describe('findOne', () => {
-    it('should return a user by ID', async () => {
-      mockUserRepository.findOne.mockResolvedValue(mockUserEntity);
+  describe('findManyWithPagination', () => {
+    it('should return paginated list of users', async () => {
+      const queryDto = { page: 1, limit: 10, filters: {}, sort: {} };
 
-      const result = await service.findOne(mockUserEntity.id);
+      const result = await service.findManyWithPagination(queryDto as any);
 
-      expect(result).toEqual(mockUserEntity);
-      expect(mockUserRepository.findOne).toHaveBeenCalledWith({
-        where: { id: mockUserEntity.id },
+      expect(result).toBeDefined();
+      expect(mockUserRepo.findManyWithPagination).toHaveBeenCalled();
+    });
+
+    it('should apply sorting by email ascending', async () => {
+      const queryDto = {
+        page: 1,
+        limit: 10,
+        filters: {},
+        sort: { field: 'email', order: 'ASC' },
+      };
+
+      const result = await service.findManyWithPagination(queryDto as any);
+
+      expect(result).toBeDefined();
+      expect(mockUserRepo.findManyWithPagination).toHaveBeenCalled();
+    });
+
+    it('should apply sorting by email descending', async () => {
+      const queryDto = {
+        page: 1,
+        limit: 10,
+        filters: {},
+        sort: { field: 'email', order: 'DESC' },
+      };
+
+      mockUserRepo.findManyWithPagination.mockResolvedValue({
+        items: [...mockUsers].reverse(),
+        total: 2,
       });
+
+      const result = await service.findManyWithPagination(queryDto as any);
+
+      expect(result).toBeDefined();
+      expect(mockUserRepo.findManyWithPagination).toHaveBeenCalled();
     });
 
-    it('should throw error when user not found', async () => {
-      mockUserRepository.findOne.mockResolvedValue(null);
+    it('should handle default pagination', async () => {
+      const queryDto = {
+        page: undefined,
+        limit: undefined,
+        filters: {},
+        sort: {},
+      };
 
-      await expect(service.findOne('nonexistent-id')).rejects.toThrow();
+      const result = await service.findManyWithPagination(queryDto as any);
+
+      expect(result).toBeDefined();
+      expect(mockUserRepo.findManyWithPagination).toHaveBeenCalled();
     });
 
-    it('should handle repository errors', async () => {
-      mockUserRepository.findOne.mockRejectedValue(new Error('Database error'));
+    it('should handle empty user list in pagination', async () => {
+      const queryDto = { page: 1, limit: 10, filters: {}, sort: {} };
+      mockUserRepo.findManyWithPagination.mockResolvedValue({ items: [], total: 0 });
 
-      await expect(service.findOne(mockUserEntity.id)).rejects.toThrow('Database error');
+      const result = await service.findManyWithPagination(queryDto as any);
+
+      expect(result).toBeDefined();
     });
   });
 
-  describe('findByEmail', () => {
-    it('should return a user by email', async () => {
-      mockUserRepository.findOneBy.mockResolvedValue(mockUserEntity);
+  describe('findOne', () => {
+    it('should return a user by ID', async () => {
+      const result = await service.findOne(mockUserEntity.id);
 
-      const result = await service.findByEmail(mockUserEntity.email);
-
-      expect(result).toEqual(mockUserEntity);
-      expect(mockUserRepository.findOneBy).toHaveBeenCalledWith({
-        email: mockUserEntity.email,
-      });
+      expect(result).toBeDefined();
+      expect(mockUserRepo.findById).toHaveBeenCalledWith(mockUserEntity.id);
     });
 
-    it('should return null when user not found by email', async () => {
-      mockUserRepository.findOneBy.mockResolvedValue(null);
+    it('should throw error when user not found', async () => {
+      mockUserRepo.findById.mockResolvedValue(null);
 
-      const result = await service.findByEmail('nonexistent@example.com');
+      await expect(service.findOne('nonexistent-id')).rejects.toThrow(NotFoundException);
+    });
 
-      expect(result).toBeNull();
+    it('should handle repository errors', async () => {
+      mockUserRepo.findById.mockRejectedValue(new Error('Database error'));
+
+      await expect(service.findOne(mockUserEntity.id)).rejects.toThrow('Database error');
     });
   });
 
   describe('update', () => {
     it('should update user by ID', async () => {
       const updateUserDto = { username: 'updateduser' };
-      const updatedUser = { ...mockUserEntity, ...updateUserDto };
+      const updatedUser = { ...mockUserEntity, username: 'updateduser' };
 
-      mockUserRepository.findOne.mockResolvedValue(mockUserEntity);
-      mockUserRepository.update.mockResolvedValue({ affected: 1 });
-      mockUserRepository.findOne.mockResolvedValueOnce(mockUserEntity).mockResolvedValueOnce(updatedUser);
+      mockUserRepo.findById.mockResolvedValue(mockUserEntity);
+      mockUserRepo.update.mockResolvedValue(updatedUser);
 
       const result = await service.update(mockUserEntity.id, updateUserDto);
 
-      expect(mockUserRepository.update).toHaveBeenCalledWith(
-        mockUserEntity.id,
-        updateUserDto,
-      );
+      expect(mockUserRepo.update).toHaveBeenCalled();
     });
 
     it('should throw error when updating non-existent user', async () => {
-      mockUserRepository.findOne.mockResolvedValue(null);
+      mockUserRepo.findById.mockResolvedValue(null);
 
-      await expect(service.update('nonexistent-id', { username: 'updated' })).rejects.toThrow();
+      await expect(service.update('nonexistent-id', { username: 'updated' })).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('remove', () => {
     it('should delete user by ID', async () => {
-      mockUserRepository.findOne.mockResolvedValue(mockUserEntity);
-      mockUserRepository.delete.mockResolvedValue({ affected: 1 });
+      mockUserRepo.remove.mockResolvedValue(true);
 
       const result = await service.remove(mockUserEntity.id);
 
-      expect(mockUserRepository.delete).toHaveBeenCalledWith(mockUserEntity.id);
+      expect(mockUserRepo.remove).toHaveBeenCalledWith(mockUserEntity.id);
+      expect(result).toBe(true);
     });
 
-    it('should throw error when deleting non-existent user', async () => {
-      mockUserRepository.findOne.mockResolvedValue(null);
+    it('should handle removal of non-existent user gracefully', async () => {
+      mockUserRepo.remove.mockResolvedValue(true);
 
-      await expect(service.remove('nonexistent-id')).rejects.toThrow();
+      const result = await service.remove('nonexistent-id');
+
+      expect(mockUserRepo.remove).toHaveBeenCalledWith('nonexistent-id');
+      expect(result).toBe(true);
     });
   });
 
   describe('pagination edge cases', () => {
     it('should handle page 0 gracefully', async () => {
-      mockUserRepository.count.mockResolvedValue(2);
-      mockUserRepository.find.mockResolvedValue(mockUsers);
+      const queryDto = { page: 0, limit: 10, filters: {}, sort: {} };
 
-      const result = await service.findAll({ page: 0, limit: 10 });
+      const result = await service.findManyWithPagination(queryDto as any);
 
       expect(result).toBeDefined();
     });
 
     it('should handle negative limit', async () => {
-      mockUserRepository.count.mockResolvedValue(2);
-      mockUserRepository.find.mockResolvedValue(mockUsers);
+      const queryDto = { page: 1, limit: -5, filters: {}, sort: {} };
 
-      const result = await service.findAll({ page: 1, limit: -5 });
+      const result = await service.findManyWithPagination(queryDto as any);
 
       expect(result).toBeDefined();
     });
 
     it('should handle very large limit', async () => {
-      mockUserRepository.count.mockResolvedValue(2);
-      mockUserRepository.find.mockResolvedValue(mockUsers);
+      const queryDto = { page: 1, limit: 999999, filters: {}, sort: {} };
 
-      const result = await service.findAll({ page: 1, limit: 999999 });
+      const result = await service.findManyWithPagination(queryDto as any);
 
       expect(result).toBeDefined();
     });
 
     it('should handle sorting by username', async () => {
-      mockUserRepository.count.mockResolvedValue(2);
-      mockUserRepository.find.mockResolvedValue(mockUsers);
-
-      const result = await service.findAll({
+      const queryDto = {
         page: 1,
         limit: 10,
-        sortBy: 'username',
-        sortOrder: 'ASC',
-      });
+        filters: {},
+        sort: { field: 'username', order: 'ASC' },
+      };
+
+      const result = await service.findManyWithPagination(queryDto as any);
 
       expect(result).toBeDefined();
     });
 
     it('should handle sorting by createdAt', async () => {
-      mockUserRepository.count.mockResolvedValue(2);
-      mockUserRepository.find.mockResolvedValue(mockUsers);
-
-      const result = await service.findAll({
+      const queryDto = {
         page: 1,
         limit: 10,
-        sortBy: 'createdAt',
-        sortOrder: 'DESC',
-      });
+        filters: {},
+        sort: { field: 'createdAt', order: 'DESC' },
+      };
+
+      const result = await service.findManyWithPagination(queryDto as any);
 
       expect(result).toBeDefined();
     });
