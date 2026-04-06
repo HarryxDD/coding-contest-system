@@ -1,5 +1,6 @@
 import { RolesGuard } from "@/roles/roles.guard";
-import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Request, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query, Request, UseGuards } from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { UsersService } from "./users.service";
 import { RoleEnum } from "@/roles/roles.enum";
@@ -63,7 +64,7 @@ export class UsersController {
      * @returns the matching user
      */
     @Get(':id')
-    findOne(@Param('id') id: string) {
+    findOne(@Param('id', ParseUUIDPipe) id: string) {
         return this.usersService.findOne(id);
     }
 
@@ -76,7 +77,7 @@ export class UsersController {
      * @throws ForbiddenException - when a non-admin tries to update another user's profile
      */
     @Patch(':id')
-    update(@Param('id') id: string, @Body() updateDto: UpdateUserDto, @Request() req) {
+    async update(@Param('id', ParseUUIDPipe) id: string, @Body() updateDto: UpdateUserDto, @Request() req) {
         if (req.user.role !== RoleEnum.ADMIN && req.user.id !== id) {
             throw new ForbiddenException('You can only update your own profile');
         }
@@ -89,10 +90,11 @@ export class UsersController {
      * @param id - the user id
      * @returns nothing
      */
-    @Roles(RoleEnum.ADMIN)
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
-    remove(@Param('id') id: string) {
+    remove(@Param('id', ParseUUIDPipe) id: string) {
         return this.usersService.remove(id);
     }
 }
+
+

@@ -1,19 +1,5 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-  Request,
-  UseGuards,
-} from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Request, HttpCode, HttpStatus, ParseUUIDPipe } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { RolesGuard } from '../roles/roles.guard';
 import { Roles } from '../roles/roles.decorator';
@@ -52,19 +38,21 @@ export class SubmissionsController {
     return infinityPagination(data, { page, limit });
   }
 
-  /**
-   * returns a submission by id for a contest
-   * @param contestId - the contest id
-   * @param id - the submission id
-   * @returns the matching submission
-   */
-  @Get(':id')
-  findOne(
-    @Param('contestId', ParseUUIDPipe) contestId: string,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
-    return this.submissionsService.findOneForContest(contestId, id);
-  }
+    /**
+     * returns a submission by id for a contest
+     * @param contestId - the contest id
+     * @param id - the submission id
+     * @returns the matching submission
+     */
+    @ApiBearerAuth()
+    @UseGuards(JwtOrPatAuthGuard)
+    @Get(':id')
+    findOne(
+      @Param('contestId', ParseUUIDPipe) contestId: string,
+      @Param('id', ParseUUIDPipe) id: string,
+    ) {
+      return this.submissionsService.findOneForContest(contestId, id);
+    }
 
   /**
    * creates a submission for a contest
@@ -91,32 +79,27 @@ export class SubmissionsController {
     );
   }
 
-  /**
-   * updates a submission by id for a contest
-   * @param contestId - the contest id
-   * @param id - the submission id
-   * @param updateSubmissionDto - the fields to update
-   * @param req - the authenticated request
-   * @returns the updated submission
-   */
-  @UseGuards(RolesGuard)
-  @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
-  @Patch(':id')
-  update(
-    @Param('contestId', ParseUUIDPipe) contestId: string,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateSubmissionDto: UpdateSubmissionDto,
-    @Request() req,
-  ) {
-    const isAdmin = req.user.role === RoleEnum.ADMIN;
-    return this.submissionsService.updateForContest(
-      contestId,
-      id,
-      updateSubmissionDto,
-      req.user.id,
-      isAdmin,
-    );
-  }
+    /**
+     * updates a submission by id for a contest
+     * @param contestId - the contest id
+     * @param id - the submission id
+     * @param updateSubmissionDto - the fields to update
+     * @param req - the authenticated request
+     * @returns the updated submission
+     */
+    @ApiBearerAuth()
+    @UseGuards(JwtOrPatAuthGuard, RolesGuard)
+    @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
+    @Patch(':id')
+    update(
+      @Param('contestId', ParseUUIDPipe) contestId: string,
+      @Param('id', ParseUUIDPipe) id: string,
+      @Body() updateSubmissionDto: UpdateSubmissionDto,
+      @Request() req,
+    ) {
+      const isAdmin = req.user.role === RoleEnum.ADMIN;
+      return this.submissionsService.updateForContest(contestId, id, updateSubmissionDto, req.user.id, isAdmin);
+    }
 
   /**
    * removes a submission by id for a contest
@@ -125,7 +108,7 @@ export class SubmissionsController {
    * @param req - the authenticated request
    * @returns nothing
    */
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtOrPatAuthGuard, RolesGuard)
   @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')

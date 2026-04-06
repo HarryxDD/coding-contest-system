@@ -11,8 +11,9 @@ import {
   Query,
   Request,
   UseGuards,
+
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { JudgeAssignmentsService } from './judge-assignments.service';
 import { RolesGuard } from '@/roles/roles.guard';
@@ -56,7 +57,9 @@ export class JudgeAssignmentsController {
    * @returns the paginated judge assignment list
    */
   @Get()
-  @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE, RoleEnum.PARTICIPANT)
+  @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE)
+  @ApiOperation({})
+  @ApiResponse({ status: 200, description: 'List of judges assigned to the contest' })
   async findAll(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Query() queryDto: QueryJudgeAssignmentDto,
@@ -77,19 +80,28 @@ export class JudgeAssignmentsController {
    * returns judge assignments for a specific judge within a contest
    * @param contestId - the contest id
    * @param judgeId - the judge user id
+   * @param queryDto - the pagination options
    * @returns the matching judge assignments
    */
   @Get('judge/:judgeId')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE)
+  @ApiOperation({})
+  @ApiResponse({ status: 200, description: 'List of contests the judge is assigned to' })
   async findByJudge(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Param('judgeId', ParseUUIDPipe) judgeId: string,
+    @Query() queryDto: QueryJudgeAssignmentDto,
   ): Promise<InfinityPaginationResponseDto<any>> {
+    const page = queryDto?.page ?? 1;
+    let limit = queryDto?.limit ?? 10;
+    if (limit > 50) limit = 50;
+
     const data = await this.judgeAssignmentsService.findByJudgeForContest(
       contestId,
       judgeId,
     );
-    return infinityPagination(data, { page: 1, limit: data.length || 1 });
+
+    return infinityPagination(data, { page, limit });
   }
 
   /**
@@ -100,6 +112,9 @@ export class JudgeAssignmentsController {
    */
   @Get(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE, RoleEnum.PARTICIPANT)
+  @ApiOperation({})
+  @ApiResponse({ status: 200, description: 'Judge assignment found' })
+  @ApiResponse({ status: 404, description: 'Judge assignment not found' })
   findOne(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Param('id', ParseUUIDPipe) id: string,

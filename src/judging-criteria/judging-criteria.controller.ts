@@ -12,7 +12,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { JudgingCriteriaService } from './judging-criteria.service';
 import { RolesGuard } from '@/roles/roles.guard';
@@ -50,10 +50,10 @@ export class JudgingCriteriaController {
     );
   }
 
+
   /**
-   * returns paginated judging criteria for a contest
-   * @param contestId - the contest id
-   * @param queryDto - the pagination options
+   * returns paginated judging criteria
+   * @param queryDto - the pagination and filter options
    * @returns the paginated judging criteria list
    */
   @Get()
@@ -82,6 +82,9 @@ export class JudgingCriteriaController {
    */
   @Get(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE, RoleEnum.PARTICIPANT)
+  @ApiOperation({})
+  @ApiResponse({ status: 200, description: 'Judging criteria found' })
+  @ApiResponse({ status: 404, description: 'Judging criteria not found' })
   findOne(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Param('id', ParseUUIDPipe) id: string,

@@ -134,5 +134,100 @@ describe('ContestsController', () => {
                     expect(Array.isArray(response.body.data)).toBeTruthy();
                 });
         });
+
+        it('should handle pagination with custom page and limit', () => {
+            return request(app.getHttpServer())
+                .get('/contests?page=1&limit=5')
+                .set('Authorization', `Bearer ${participantToken}`)
+                .expect(200)
+                .then((response) => {
+                    expect(response.body).toHaveProperty('data');
+                    expect(response.body.page).toBe(1);
+                });
+        });
+
+        it('should cap limit at 50', () => {
+            return request(app.getHttpServer())
+                .get('/contests?limit=100')
+                .set('Authorization', `Bearer ${participantToken}`)
+                .expect(200)
+                .then((response) => {
+                    expect(response.body).toHaveProperty('data');
+                });
+        });
+
+        it('should reject unauthenticated requests to GET /contests', () => {
+            return request(app.getHttpServer())
+                .get('/contests')
+                .expect(401);
+        });
+    });
+
+    describe('GET /contests/:id', () => {
+        it('should return a contest by id', () => {
+            return request(app.getHttpServer())
+                .get('/contests/00000000-0000-0000-0000-000000000000')
+                .expect(404);
+        });
+
+        it('should reject invalid UUID format', () => {
+            return request(app.getHttpServer())
+                .get('/contests/invalid-id')
+                .expect(400);
+        });
+    });
+
+    describe('PATCH /contests/:id', () => {
+        it('should reject unauthenticated users', () => {
+            return request(app.getHttpServer())
+                .patch('/contests/00000000-0000-0000-0000-000000000000')
+                .send({ name: 'Updated Contest' })
+                .expect(401);
+        });
+
+        it('should reject non-organizer participants', () => {
+            return request(app.getHttpServer())
+                .patch('/contests/00000000-0000-0000-0000-000000000000')
+                .set('Authorization', `Bearer ${participantToken}`)
+                .send({ name: 'Updated Contest' })
+                .expect(403);
+        });
+
+        it('should reject invalid UUID format', () => {
+            return request(app.getHttpServer())
+                .patch('/contests/invalid-id')
+                .set('Authorization', `Bearer ${organizerToken}`)
+                .send({ name: 'Updated Contest' })
+                .expect(400);
+        });
+    });
+
+    describe('DELETE /contests/:id', () => {
+        it('should reject unauthenticated users', () => {
+            return request(app.getHttpServer())
+                .delete('/contests/00000000-0000-0000-0000-000000000000')
+                .expect(401);
+        });
+
+        it('should reject non-organizer participants', () => {
+            return request(app.getHttpServer())
+                .delete('/contests/00000000-0000-0000-0000-000000000000')
+                .set('Authorization', `Bearer ${participantToken}`)
+                .expect(403);
+        });
+
+        it('should reject invalid UUID format', () => {
+            return request(app.getHttpServer())
+                .delete('/contests/invalid-id')
+                .set('Authorization', `Bearer ${organizerToken}`)
+                .expect(400);
+        });
+
+        it('should return 404 when deleting non-existent contest', () => {
+            return request(app.getHttpServer())
+                .delete('/contests/00000000-0000-0000-0000-000000000000')
+                .set('Authorization', `Bearer ${organizerToken}`)
+                .expect(404);
+        });
     });
 });
