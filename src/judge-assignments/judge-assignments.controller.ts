@@ -11,11 +11,9 @@ import {
   Query,
   Request,
   UseGuards,
-  HttpCode,
-  HttpStatus,
-  ParseUUIDPipe,
+
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { JudgeAssignmentsService } from './judge-assignments.service';
 import { RolesGuard } from '@/roles/roles.guard';
@@ -58,39 +56,52 @@ export class JudgeAssignmentsController {
    * @param queryDto - the pagination and filter options
    * @returns the paginated judge assignment list
    */
-  @Get('contest/:contestId')
+  @Get()
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE)
   @ApiOperation({})
   @ApiResponse({ status: 200, description: 'List of judges assigned to the contest' })
-  findByContest(@Param('contestId', ParseUUIDPipe) contestId: string) {
-    return this.judgeAssignmentsService.findByContest(contestId);
+  async findAll(
+    @Param('contestId', ParseUUIDPipe) contestId: string,
+    @Query() queryDto: QueryJudgeAssignmentDto,
+  ): Promise<InfinityPaginationResponseDto<any>> {
+    const page = queryDto?.page ?? 1;
+    let limit = queryDto?.limit ?? 10;
+    if (limit > 50) limit = 50;
+
+    const data = await this.judgeAssignmentsService.findManyWithPaginationForContest(
+      contestId,
+      queryDto,
+    );
+
+    return infinityPagination(data, { page, limit });
   }
 
   /**
    * returns judge assignments for a specific judge within a contest
    * @param contestId - the contest id
    * @param judgeId - the judge user id
+   * @param queryDto - the pagination options
    * @returns the matching judge assignments
    */
   @Get('judge/:judgeId')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE)
   @ApiOperation({})
   @ApiResponse({ status: 200, description: 'List of contests the judge is assigned to' })
-  findByJudge(@Param('judgeId', ParseUUIDPipe) judgeId: string) {
-    return this.judgeAssignmentsService.findByJudge(judgeId);
-  }
+  async findByJudge(
+    @Param('contestId', ParseUUIDPipe) contestId: string,
+    @Param('judgeId', ParseUUIDPipe) judgeId: string,
+    @Query() queryDto: QueryJudgeAssignmentDto,
+  ): Promise<InfinityPaginationResponseDto<any>> {
+    const page = queryDto?.page ?? 1;
+    let limit = queryDto?.limit ?? 10;
+    if (limit > 50) limit = 50;
 
-  /**
-   * returns paginated judge assignments
-   * @param queryDto - the pagination and filter options
-   * @returns the paginated judge assignment list
-   */
-  @Get()
-  @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE, RoleEnum.PARTICIPANT)
-  @ApiOperation({})
-  @ApiResponse({ status: 200, description: 'List of judge assignments' })
-  findAll(@Query() queryDto: QueryJudgeAssignmentDto) {
-    return this.judgeAssignmentsService.findManyWithPagination(queryDto);
+    const data = await this.judgeAssignmentsService.findByJudgeForContest(
+      contestId,
+      judgeId,
+    );
+
+    return infinityPagination(data, { page, limit });
   }
 
   /**
@@ -104,8 +115,11 @@ export class JudgeAssignmentsController {
   @ApiOperation({})
   @ApiResponse({ status: 200, description: 'Judge assignment found' })
   @ApiResponse({ status: 404, description: 'Judge assignment not found' })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.judgeAssignmentsService.findOne(id);
+  findOne(
+    @Param('contestId', ParseUUIDPipe) contestId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.judgeAssignmentsService.findOneForContest(contestId, id);
   }
 
   /**
@@ -117,7 +131,10 @@ export class JudgeAssignmentsController {
   @Delete(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER)
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.judgeAssignmentsService.remove(id);
+  remove(
+    @Param('contestId', ParseUUIDPipe) contestId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.judgeAssignmentsService.removeForContest(contestId, id);
   }
 }

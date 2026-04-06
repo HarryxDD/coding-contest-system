@@ -228,7 +228,7 @@ describe('JudgingCriteriaController (e2e)', () => {
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(200);
 
-      console.error("DEBUG:", response.body); expect(Array.isArray(response.body.data)).toBeTruthy();
+      expect(Array.isArray(response.body.data)).toBeTruthy();
     });
 
     it('should support filtering by contestId', async () => {
@@ -237,7 +237,7 @@ describe('JudgingCriteriaController (e2e)', () => {
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(200);
 
-      console.error("DEBUG:", response.body); expect(Array.isArray(response.body.data)).toBeTruthy();
+      expect(Array.isArray(response.body.data)).toBeTruthy();
     });
 
     it('should support pagination parameters', async () => {
@@ -246,7 +246,7 @@ describe('JudgingCriteriaController (e2e)', () => {
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(200);
 
-      console.error("DEBUG:", response.body); expect(Array.isArray(response.body.data)).toBeTruthy();
+      expect(Array.isArray(response.body.data)).toBeTruthy();
     });
   });
 
@@ -376,28 +376,27 @@ describe('JudgingCriteriaController (e2e)', () => {
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(200);
 
-      console.error("DEBUG:", response.body); expect(Array.isArray(response.body.data)).toBeTruthy();
+      expect(Array.isArray(response.body.data)).toBeTruthy();
     });
 
     it('should return empty array for contest with no criteria', async () => {
       const response = await request(app.getHttpServer())
-        .get(`/judging-criteria/contest/${NON_EXISTENT_ID}`)
+        .get(`/contests/${NON_EXISTENT_ID}/criteria`)
         .set('Authorization', `Bearer ${judgeToken}`)
-        .expect(200);
+        .expect(404);
 
-      expect(Array.isArray(response.body)).toBeTruthy();
-      expect(response.body.length).toBe(0);
+      // When contest doesn't exist, expect 404 error
     });
 
     it('should reject unauthenticated requests to contest criteria', () => {
       return request(app.getHttpServer())
-        .get(`/judging-criteria/contest/${contestId}`)
+        .get(`/contests/${contestId}/criteria`)
         .expect(401);
     });
 
     it('should reject invalid UUID format for contestId', () => {
       return request(app.getHttpServer())
-        .get('/judging-criteria/contest/invalid-id')
+        .get(`/contests/invalid-id/criteria`)
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(400);
     });
@@ -406,7 +405,7 @@ describe('JudgingCriteriaController (e2e)', () => {
   describe('Additional error handling', () => {
     it('should reject invalid input (missing contestId in POST)', () => {
       return request(app.getHttpServer())
-        .post('/judging-criteria')
+        .post(`/contests/${contestId}/criteria`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({
           name: 'Code Quality',
@@ -417,7 +416,7 @@ describe('JudgingCriteriaController (e2e)', () => {
 
     it('should reject invalid input (missing name in POST)', () => {
       return request(app.getHttpServer())
-        .post('/judging-criteria')
+        .post(`/contests/${contestId}/criteria`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({
           contestId: contestId,
@@ -428,7 +427,7 @@ describe('JudgingCriteriaController (e2e)', () => {
 
     it('should reject invalid UUID format for contestId', () => {
       return request(app.getHttpServer())
-        .post('/judging-criteria')
+        .post(`/contests/invalid-uuid/criteria`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({
           contestId: 'invalid-uuid',
@@ -440,7 +439,7 @@ describe('JudgingCriteriaController (e2e)', () => {
 
     it('should reject empty name', () => {
       return request(app.getHttpServer())
-        .post('/judging-criteria')
+        .post(`/contests/${contestId}/criteria`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({
           contestId: contestId,
@@ -452,7 +451,7 @@ describe('JudgingCriteriaController (e2e)', () => {
 
     it('should reject negative maxScore', () => {
       return request(app.getHttpServer())
-        .post('/judging-criteria')
+        .post(`/contests/${contestId}/criteria`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({
           contestId: contestId,
@@ -464,7 +463,7 @@ describe('JudgingCriteriaController (e2e)', () => {
 
     it('should reject zero maxScore', () => {
       return request(app.getHttpServer())
-        .post('/judging-criteria')
+        .post(`/contests/${contestId}/criteria`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({
           contestId: contestId,
@@ -477,49 +476,47 @@ describe('JudgingCriteriaController (e2e)', () => {
     it('should handle GET request to non-existent criteria with different UUID', async () => {
       const anotherNonExistentId = '00000000-0000-0000-0000-000000000099';
       return request(app.getHttpServer())
-        .get(`/judging-criteria/${anotherNonExistentId}`)
+        .get(`/contests/${contestId}/criteria/${anotherNonExistentId}`)
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(404);
     });
 
     it('should reject invalid UUID in GET :id', () => {
       return request(app.getHttpServer())
-        .get('/judging-criteria/invalid-id')
+        .get(`/contests/${contestId}/criteria/invalid-id`)
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(400);
     });
 
     it('should reject PATCH with invalid maxScore', () => {
       if (!criteriaId) {
-        pending('criteriaId not set');
+        this.skip();
       }
       return request(app.getHttpServer())
-        .patch(`/judging-criteria/${criteriaId}`)
+        .patch(`/contests/${contestId}/criteria/${criteriaId}`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({
           maxScore: -50,
         })
-        .expect(400, (res) => {
-          // Might accept or reject depending on validation
-        });
+        .expect(400);
     });
 
     it('should reject DELETE without JWT', () => {
       return request(app.getHttpServer())
-        .delete(`/judging-criteria/${NON_EXISTENT_ID}`)
+        .delete(`/contests/${contestId}/criteria/${NON_EXISTENT_ID}`)
         .expect(401);
     });
 
     it('should reject invalid UUID in DELETE', () => {
       return request(app.getHttpServer())
-        .delete('/judging-criteria/invalid-id')
+        .delete(`/contests/${contestId}/criteria/invalid-id`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .expect(400);
     });
 
     it('should handle multiple criteria for same contest', async () => {
       const createRes1 = await request(app.getHttpServer())
-        .post('/judging-criteria')
+        .post(`/contests/${contestId}/criteria`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({
           contestId: contestId,
@@ -528,7 +525,7 @@ describe('JudgingCriteriaController (e2e)', () => {
         });
 
       const createRes2 = await request(app.getHttpServer())
-        .post('/judging-criteria')
+        .post(`/contests/${contestId}/criteria`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({
           contestId: contestId,
@@ -538,33 +535,31 @@ describe('JudgingCriteriaController (e2e)', () => {
 
       if (createRes1.status === 201 && createRes2.status === 201) {
         const response = await request(app.getHttpServer())
-          .get(`/judging-criteria/contest/${contestId}`)
+          .get(`/contests/${contestId}/criteria`)
           .set('Authorization', `Bearer ${organizerToken}`)
           .expect(200);
 
-        expect(Array.isArray(response.body)).toBeTruthy();
-        expect(response.body.length).toBeGreaterThanOrEqual(2);
+        expect(Array.isArray(response.body.data)).toBeTruthy();
+        expect(response.body.data.length).toBeGreaterThanOrEqual(2);
       }
     });
 
     it('should handle criteria update with partial data', async () => {
       if (!criteriaId) {
-        pending('criteriaId not set');
+        this.skip();
       }
       return request(app.getHttpServer())
-        .patch(`/judging-criteria/${criteriaId}`)
+        .patch(`/contests/${contestId}/criteria/${criteriaId}`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({
           description: 'Updated description only',
         })
-        .expect(200, (res) => {
-          // Should allow partial updates
-        });
+        .expect(200);
     });
 
     it('should reject PATCH request with invalid UUID format', () => {
       return request(app.getHttpServer())
-        .patch('/judging-criteria/invalid-uuid')
+        .patch(`/contests/${contestId}/criteria/invalid-uuid`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({ name: 'Updated' })
         .expect(400);
@@ -572,11 +567,13 @@ describe('JudgingCriteriaController (e2e)', () => {
 
     it('should support retrieving criteria with sorting', async () => {
       const response = await request(app.getHttpServer())
-        .get('/judging-criteria?sortBy=name&sortOrder=ASC')
+        .get(`/contests/${contestId}/criteria?sortBy=name&sortOrder=ASC`)
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(200);
 
-      expect(Array.isArray(response.body)).toBeTruthy();
+      expect(Array.isArray(response.body.data)).toBeTruthy();
     });
   });
 });
+
+

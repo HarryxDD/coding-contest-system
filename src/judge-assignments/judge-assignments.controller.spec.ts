@@ -266,7 +266,7 @@ describe('JudgeAssignmentsController (e2e)', () => {
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(200);
 
-      console.error("DEBUG J-A:", response.body); expect(Array.isArray(response.body.data)).toBeTruthy();
+      expect(Array.isArray(response.body.data)).toBeTruthy();
     });
 
     it('should support filtering by contestId', async () => {
@@ -275,7 +275,7 @@ describe('JudgeAssignmentsController (e2e)', () => {
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(200);
 
-      console.error("DEBUG J-A:", response.body); expect(Array.isArray(response.body.data)).toBeTruthy();
+      expect(Array.isArray(response.body.data)).toBeTruthy();
     });
 
     it('should support filtering by judgeId', async () => {
@@ -284,7 +284,7 @@ describe('JudgeAssignmentsController (e2e)', () => {
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(200);
 
-      console.error("DEBUG J-A:", response.body); expect(Array.isArray(response.body.data)).toBeTruthy();
+      expect(Array.isArray(response.body.data)).toBeTruthy();
     });
 
     it('should support pagination parameters', async () => {
@@ -293,7 +293,7 @@ describe('JudgeAssignmentsController (e2e)', () => {
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(200);
 
-      console.error("DEBUG J-A:", response.body); expect(Array.isArray(response.body.data)).toBeTruthy();
+      expect(Array.isArray(response.body.data)).toBeTruthy();
     });
   });
 
@@ -364,7 +364,7 @@ describe('JudgeAssignmentsController (e2e)', () => {
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(200);
 
-      console.error("DEBUG J-A:", response.body); expect(Array.isArray(response.body.data)).toBeTruthy();
+      expect(Array.isArray(response.body.data)).toBeTruthy();
     });
 
     it('should return empty array for contests with no assigned judges', async () => {
@@ -382,7 +382,7 @@ describe('JudgeAssignmentsController (e2e)', () => {
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(200);
 
-      console.error("DEBUG J-A:", response.body); expect(Array.isArray(response.body.data)).toBeTruthy();
+      expect(Array.isArray(response.body.data)).toBeTruthy();
     });
 
     it('should return empty array for judges with no assigned contests', async () => {
@@ -391,58 +391,45 @@ describe('JudgeAssignmentsController (e2e)', () => {
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(200);
 
-      console.error("DEBUG J-A:", response.body); expect(Array.isArray(response.body.data)).toBeTruthy();
+      expect(Array.isArray(response.body.data)).toBeTruthy();
       expect(response.body.data.length).toBe(0);
     });
 
     it('should reject unauthenticated requests to judge assignments by judge ID', () => {
       return request(app.getHttpServer())
-        .get(`/judge-assignments/judge/${judgeId}`)
+        .get(`/contests/${contestId}/judge-assignments/judge/${judgeId}`)
         .expect(401);
     });
 
     it('should reject invalid UUID format for judgeId in path', () => {
       return request(app.getHttpServer())
-        .get('/judge-assignments/judge/invalid-id')
+        .get(`/contests/${contestId}/judge-assignments/judge/invalid-id`)
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(400);
     });
 
     it('should support filtering with page and limit', async () => {
       const response = await request(app.getHttpServer())
-        .get(`/judge-assignments/judge/${judgeId}?page=1&limit=5`)
+        .get(`/contests/${contestId}/judge-assignments/judge/${judgeId}?page=1&limit=5`)
         .set('Authorization', `Bearer ${judgeToken}`)
         .expect(200);
 
-      expect(Array.isArray(response.body)).toBeTruthy();
+      expect(Array.isArray(response.body.data)).toBeTruthy();
     });
   });
 
   describe('Additional error handling', () => {
-    it('should reject PATCH requests (not implemented)', async () => {
+    it('should reject PATCH requests (not implemented)', () => {
       return request(app.getHttpServer())
-        .patch(`/judge-assignments/${assignmentId}`)
+        .patch(`/contests/${contestId}/judge-assignments/${assignmentId}`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({ notes: 'updated' })
-        .expect(404, (res) => {
-          // Route might not exist
-        });
+        .expect(404);
     });
 
     it('should reject invalid contestId in POST', () => {
       return request(app.getHttpServer())
-        .post('/judge-assignments')
-        .set('Authorization', `Bearer ${organizerToken}`)
-        .send({
-          contestId: 'invalid-uuid',
-          judgeId: judgeId,
-        })
-        .expect(400);
-    });
-
-    it('should handle missing contestId in POST', () => {
-      return request(app.getHttpServer())
-        .post('/judge-assignments')
+        .post(`/contests/invalid-uuid/judge-assignments`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({
           judgeId: judgeId,
@@ -450,20 +437,29 @@ describe('JudgeAssignmentsController (e2e)', () => {
         .expect(400);
     });
 
-    it('should handle empty request body in POST', () => {
+    it('should handle missing judgeId in POST', () => {
       return request(app.getHttpServer())
-        .post('/judge-assignments')
+        .post(`/contests/${contestId}/judge-assignments`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({})
         .expect(400);
     });
 
-    it('should reject non-existent judge ID assignment', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/judge-assignments')
+    it('should reject invalid judgeId in POST', () => {
+      return request(app.getHttpServer())
+        .post(`/contests/${contestId}/judge-assignments`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({
-          contestId: contestId,
+          judgeId: 'invalid-uuid',
+        })
+        .expect(400);
+    });
+
+    it('should reject non-existent judge ID assignment', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`/contests/${contestId}/judge-assignments`)
+        .set('Authorization', `Bearer ${organizerToken}`)
+        .send({
           judgeId: NON_EXISTENT_ID, // non-existent judge
         });
 
@@ -473,10 +469,9 @@ describe('JudgeAssignmentsController (e2e)', () => {
 
     it('should reject non-existent contest ID assignment', async () => {
       const response = await request(app.getHttpServer())
-        .post('/judge-assignments')
+        .post(`/contests/${NON_EXISTENT_ID}/judge-assignments`)
         .set('Authorization', `Bearer ${organizerToken}`)
         .send({
-          contestId: NON_EXISTENT_ID, // non-existent contest
           judgeId: secondJudgeId,
         });
 

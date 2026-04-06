@@ -11,11 +11,8 @@ import {
   Post,
   Query,
   UseGuards,
-  HttpCode,
-  HttpStatus,
-  ParseUUIDPipe,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { JudgingCriteriaService } from './judging-criteria.service';
 import { RolesGuard } from '@/roles/roles.guard';
@@ -53,18 +50,6 @@ export class JudgingCriteriaController {
     );
   }
 
-  /**
-   * returns paginated judging criteria for a contest
-   * @param contestId - the contest id
-   * @returns the contest judging criteria
-   */
-  @Get('contest/:contestId')
-  @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE, RoleEnum.PARTICIPANT)
-  @ApiOperation({})
-  @ApiResponse({ status: 200, description: 'List of judging criteria for the contest' })
-  findByContest(@Param('contestId', ParseUUIDPipe) contestId: string) {
-    return this.judgingCriteriaService.findByContest(contestId);
-  }
 
   /**
    * returns paginated judging criteria
@@ -100,8 +85,11 @@ export class JudgingCriteriaController {
   @ApiOperation({})
   @ApiResponse({ status: 200, description: 'Judging criteria found' })
   @ApiResponse({ status: 404, description: 'Judging criteria not found' })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.judgingCriteriaService.findOne(id);
+  findOne(
+    @Param('contestId', ParseUUIDPipe) contestId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.judgingCriteriaService.findOneForContest(contestId, id);
   }
 
   /**
@@ -114,6 +102,7 @@ export class JudgingCriteriaController {
   @Patch(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER)
   update(
+    @Param('contestId', ParseUUIDPipe) contestId: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateJudgingCriteriaDto: UpdateJudgingCriteriaDto,
   ) {
@@ -133,7 +122,10 @@ export class JudgingCriteriaController {
   @Delete(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER)
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.judgingCriteriaService.remove(id);
+  remove(
+    @Param('contestId', ParseUUIDPipe) contestId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.judgingCriteriaService.removeForContest(contestId, id);
   }
 }

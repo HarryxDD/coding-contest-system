@@ -167,9 +167,7 @@ describe('ContestsController', () => {
         it('should return a contest by id', () => {
             return request(app.getHttpServer())
                 .get('/contests/00000000-0000-0000-0000-000000000000')
-                .expect(200, (res) => {
-                    // Should return contest or 404, but testing the route works
-                });
+                .expect(404);
         });
 
         it('should reject invalid UUID format', () => {
@@ -225,11 +223,11 @@ describe('ContestsController', () => {
                 .expect(400);
         });
 
-        it('should return 204 No Content on successful delete', () => {
+        it('should return 404 when deleting non-existent contest', () => {
             return request(app.getHttpServer())
                 .delete('/contests/00000000-0000-0000-0000-000000000000')
                 .set('Authorization', `Bearer ${organizerToken}`)
-                .expect(204);
+                .expect(404);
         });
     });
 });

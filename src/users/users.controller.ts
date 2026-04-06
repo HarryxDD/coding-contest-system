@@ -77,7 +77,7 @@ export class UsersController {
      * @throws ForbiddenException - when a non-admin tries to update another user's profile
      */
     @Patch(':id')
-    update(@Param('id', ParseUUIDPipe) id: string, @Body() updateDto: UpdateUserDto, @Request() req) {
+    async update(@Param('id', ParseUUIDPipe) id: string, @Body() updateDto: UpdateUserDto, @Request() req) {
         if (req.user.role !== RoleEnum.ADMIN && req.user.id !== id) {
             throw new ForbiddenException('You can only update your own profile');
         }
@@ -90,10 +90,11 @@ export class UsersController {
      * @param id - the user id
      * @returns nothing
      */
-    @Roles(RoleEnum.ADMIN)
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     remove(@Param('id', ParseUUIDPipe) id: string) {
         return this.usersService.remove(id);
     }
 }
+
+

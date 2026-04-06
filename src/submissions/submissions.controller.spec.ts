@@ -104,7 +104,7 @@ describe('SubmissionsController', () => {
                 .get(`/contests/${newSubmissionPayload.contestId}/submissions`)
                 .set('Authorization', `Bearer ${participantToken}`)
                 .then(r => {
-                    if (r.status !== 200) console.error("DEBUG_SUBS:", r.body, " CONTEST_ID:", newSubmissionPayload.contestId);
+
                     expect(r.status).toBe(200);
                     expect(r.body).toHaveProperty('data');
                     expect(r.body).toHaveProperty('page');
@@ -114,7 +114,7 @@ describe('SubmissionsController', () => {
 
         it('should handle pagination with custom parameters', () => {
             return request(app.getHttpServer())
-                .get('/submissions?page=1&limit=5')
+                .get(`/contests/${newSubmissionPayload.contestId}/submissions?page=1&limit=5`)
                 .set('Authorization', `Bearer ${participantToken}`)
                 .expect(200)
                 .then((response) => {
@@ -125,7 +125,7 @@ describe('SubmissionsController', () => {
 
         it('should reject unauthenticated requests', () => {
             return request(app.getHttpServer())
-                .get('/submissions')
+                .get(`/contests/${newSubmissionPayload.contestId}/submissions`)
                 .expect(401);
         });
     });
@@ -133,23 +133,21 @@ describe('SubmissionsController', () => {
     describe('GET /submissions/:id', () => {
         it('should get a submission by id', () => {
             return request(app.getHttpServer())
-                .get('/submissions/00000000-0000-0000-0000-000000000000')
+                .get(`/contests/${newSubmissionPayload.contestId}/submissions/00000000-0000-0000-0000-000000000000`)
                 .set('Authorization', `Bearer ${participantToken}`)
-                .expect(200, (res) => {
-                    // Should either return submission or 404
-                });
+                .expect(404);
         });
 
         it('should reject invalid UUID format', () => {
             return request(app.getHttpServer())
-                .get('/submissions/invalid-id')
+                .get(`/contests/${newSubmissionPayload.contestId}/submissions/invalid-id`)
                 .set('Authorization', `Bearer ${participantToken}`)
                 .expect(400);
         });
 
         it('should reject unauthenticated requests', () => {
             return request(app.getHttpServer())
-                .get('/submissions/00000000-0000-0000-0000-000000000000')
+                .get(`/contests/${newSubmissionPayload.contestId}/submissions/00000000-0000-0000-0000-000000000000`)
                 .expect(401);
         });
     });
@@ -157,26 +155,24 @@ describe('SubmissionsController', () => {
     describe('PATCH /submissions/:id', () => {
         it('should reject unauthenticated users', () => {
             return request(app.getHttpServer())
-                .patch('/submissions/00000000-0000-0000-0000-000000000000')
-                .send({ status: 'SUBMITTED' })
+                .patch(`/contests/${newSubmissionPayload.contestId}/submissions/00000000-0000-0000-0000-000000000000`)
+                .send({ status: 'submitted' })
                 .expect(401);
         });
 
         it('should allow authenticated user to update submission', () => {
             return request(app.getHttpServer())
-                .patch('/submissions/00000000-0000-0000-0000-000000000000')
+                .patch(`/contests/${newSubmissionPayload.contestId}/submissions/00000000-0000-0000-0000-000000000000`)
                 .set('Authorization', `Bearer ${participantToken}`)
-                .send({ status: 'SUBMITTED' })
-                .expect(200, (res) => {
-                    // Should return updated submission or 404
-                });
+                .send({ status: 'submitted' })
+                .expect(404);
         });
 
         it('should reject invalid UUID format', () => {
             return request(app.getHttpServer())
-                .patch('/submissions/invalid-id')
+                .patch(`/contests/${newSubmissionPayload.contestId}/submissions/invalid-id`)
                 .set('Authorization', `Bearer ${participantToken}`)
-                .send({ status: 'SUBMITTED' })
+                .send({ status: 'submitted' })
                 .expect(400);
         });
     });
@@ -184,22 +180,20 @@ describe('SubmissionsController', () => {
     describe('DELETE /submissions/:id', () => {
         it('should reject unauthenticated users', () => {
             return request(app.getHttpServer())
-                .delete('/submissions/00000000-0000-0000-0000-000000000000')
+                .delete(`/contests/${newSubmissionPayload.contestId}/submissions/00000000-0000-0000-0000-000000000000`)
                 .expect(401);
         });
 
-        it('should allow authenticated user to delete submission', () => {
+        it('should return 404 when deleting non-existent submission', () => {
             return request(app.getHttpServer())
-                .delete('/submissions/00000000-0000-0000-0000-000000000000')
+                .delete(`/contests/${newSubmissionPayload.contestId}/submissions/00000000-0000-0000-0000-000000000000`)
                 .set('Authorization', `Bearer ${participantToken}`)
-                .expect(204, (res) => {
-                    // Should return 204 on success or 404
-                });
+                .expect(404);
         });
 
         it('should reject invalid UUID format', () => {
             return request(app.getHttpServer())
-                .delete('/submissions/invalid-id')
+                .delete(`/contests/${newSubmissionPayload.contestId}/submissions/invalid-id`)
                 .set('Authorization', `Bearer ${participantToken}`)
                 .expect(400);
         });

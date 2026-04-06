@@ -127,7 +127,7 @@ describe('TeamsController', () => {
         .post('/teams')
         .set('Authorization', `Bearer ${participantToken}`)
         .send(teamPayload);
-      if (response.status !== 201) console.error("TEAMS_DEBUG", response.body);
+
       expect(response.status).toBe(201);
 
       expect(response.body).toHaveProperty('id');
