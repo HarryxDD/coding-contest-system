@@ -13,7 +13,7 @@ import {
   HttpStatus,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
 import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { RolesGuard } from '../roles/roles.guard';
 import { Roles } from '../roles/roles.decorator';
@@ -38,6 +38,26 @@ export class TeamsController {
    */
   @ApiBearerAuth()
   @UseGuards(JwtOrPatAuthGuard)
+  @ApiOperation({ summary: 'list teams' })
+  @ApiResponse({
+    status: 200,
+    description: 'returns paginated list of teams',
+    schema: {
+      example: {
+        data: [
+          {
+            id: '123e4567-e89b-12d3-a456-426614174000',
+            name: 'Team Alpha',
+            contestId: '123e4567-e89b-12d3-a456-426614174001',
+            createdAt: '2026-01-01T00:00:00.000Z',
+          },
+        ],
+        page: 1,
+        totalItems: 1,
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized, missing or invalid token' })
   @Get()
   async findAll(
     @Query() query: QueryTeamDto,
@@ -55,6 +75,22 @@ export class TeamsController {
    * @param id - the team id
    * @returns the matching team
    */
+  @ApiOperation({ summary: 'get a team by id' })
+  @ApiParam({ name: 'id', type: String, description: 'team uuid' })
+  @ApiResponse({
+    status: 200,
+    description: 'returns the team',
+    schema: {
+      example: {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        name: 'Team Alpha',
+        contestId: '123e4567-e89b-12d3-a456-426614174001',
+        createdAt: '2026-01-01T00:00:00.000Z',
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'bad request, invalid UUID format' })
+  @ApiResponse({ status: 404, description: 'team not found' })
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.teamsService.findOne(id);
@@ -70,6 +106,31 @@ export class TeamsController {
   @UseGuards(JwtOrPatAuthGuard, RolesGuard)
   @Roles(RoleEnum.PARTICIPANT, RoleEnum.ADMIN)
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'create a team' })
+  @ApiBody({
+    schema: {
+      example: {
+        name: 'Team Alpha',
+        contestId: '123e4567-e89b-12d3-a456-426614174001',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Team created successfully',
+    schema: {
+      example: {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        name: 'Team Alpha',
+        contestId: '123e4567-e89b-12d3-a456-426614174001',
+        createdAt: '2026-01-01T00:00:00.000Z',
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Bad request, missing required fields' })
+  @ApiResponse({ status: 401, description: 'Unauthorized, missing or invalid token' })
+  @ApiResponse({ status: 403, description: 'Forbidden, insufficient role' })
+  @ApiResponse({ status: 404, description: 'Contest not found' })
   @Post()
   create(@Body() createTeamDto: CreateTeamDto, @Request() req) {
     return this.teamsService.create(createTeamDto, req.user.id);
@@ -84,6 +145,31 @@ export class TeamsController {
    */
   @ApiBearerAuth()
   @UseGuards(JwtOrPatAuthGuard)
+  @ApiOperation({ summary: 'update a team by id' })
+  @ApiParam({ name: 'id', type: String, description: 'team uuid' })
+  @ApiBody({
+    schema: {
+      example: {
+        name: 'Team Beta',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Team updated successfully',
+    schema: {
+      example: {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        name: 'Team Beta',
+        contestId: '123e4567-e89b-12d3-a456-426614174001',
+        createdAt: '2026-01-01T00:00:00.000Z',
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'bad request, invalid UUID format' })
+  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
+  @ApiResponse({ status: 403, description: 'forbidden, not the team creator or admin' })
+  @ApiResponse({ status: 404, description: 'team not found' })
   @Patch(':id')
   update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -103,10 +189,16 @@ export class TeamsController {
   @ApiBearerAuth()
   @UseGuards(JwtOrPatAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'delete a team by id' })
+  @ApiParam({ name: 'id', type: String, description: 'team uuid' })
+  @ApiResponse({ status: 204, description: 'team deleted successfully' })
+  @ApiResponse({ status: 400, description: 'bad request, invalid UUID format' })
+  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
+  @ApiResponse({ status: 403, description: 'forbidden, not the team creator or admin' })
+  @ApiResponse({ status: 404, description: 'team not found' })
   @Delete(':id')
   remove(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     const isAdmin = req.user.role === RoleEnum.ADMIN;
     return this.teamsService.remove(id, req.user.id, isAdmin);
   }
 }
-

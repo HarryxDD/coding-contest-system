@@ -13,7 +13,7 @@ import {
   UseGuards,
 
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { JudgeAssignmentsService } from './judge-assignments.service';
 import { RolesGuard } from '@/roles/roles.guard';
@@ -40,6 +40,32 @@ export class JudgeAssignmentsController {
   @Post()
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER)
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'create a judge assignment' })
+  @ApiParam({ name: 'contestId', type: String, description: 'contest uuid' })
+  @ApiBody({
+    schema: {
+      example: {
+        judgeId: '123e4567-e89b-12d3-a456-426614174051',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'judge assignment created successfully',
+    schema: {
+      example: {
+        id: '123e4567-e89b-12d3-a456-426614174060',
+        contestId: '123e4567-e89b-12d3-a456-426614174010',
+        judgeId: '123e4567-e89b-12d3-a456-426614174051',
+        assignedAt: '2026-01-08T08:00:00.000Z',
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'bad request, invalid contest uuid or assignment payload' })
+  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
+  @ApiResponse({ status: 403, description: 'forbidden, organizer or admin role required' })
+  @ApiResponse({ status: 404, description: 'contest not found' })
+  @ApiResponse({ status: 409, description: 'conflict, judge is already assigned to this contest' })
   create(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Body() createJudgeAssignmentDto: CreateJudgeAssignmentDto,
@@ -55,11 +81,33 @@ export class JudgeAssignmentsController {
    * @param contestId - the contest id
    * @param queryDto - the pagination and filter options
    * @returns the paginated judge assignment list
-   */
+  */
   @Get()
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE)
-  @ApiOperation({})
-  @ApiResponse({ status: 200, description: 'List of judges assigned to the contest' })
+  @ApiOperation({ summary: 'list judge assignments for a contest' })
+  @ApiParam({ name: 'contestId', type: String, description: 'contest uuid' })
+  @ApiResponse({
+    status: 200,
+    description: 'returns paginated judge assignments',
+    schema: {
+      example: {
+        data: [
+          {
+            id: '123e4567-e89b-12d3-a456-426614174060',
+            contestId: '123e4567-e89b-12d3-a456-426614174010',
+            judgeId: '123e4567-e89b-12d3-a456-426614174051',
+            assignedAt: '2026-01-08T08:00:00.000Z',
+          },
+        ],
+        page: 1,
+        totalItems: 1,
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'bad request, invalid contest uuid format' })
+  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
+  @ApiResponse({ status: 403, description: 'forbidden, admin, organizer, or judge role required' })
+  @ApiResponse({ status: 404, description: 'contest not found' })
   async findAll(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Query() queryDto: QueryJudgeAssignmentDto,
@@ -85,8 +133,31 @@ export class JudgeAssignmentsController {
    */
   @Get('judge/:judgeId')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE)
-  @ApiOperation({})
-  @ApiResponse({ status: 200, description: 'List of contests the judge is assigned to' })
+  @ApiOperation({ summary: 'list judge assignments for a judge' })
+  @ApiParam({ name: 'contestId', type: String, description: 'contest uuid' })
+  @ApiParam({ name: 'judgeId', type: String, description: 'judge user uuid' })
+  @ApiResponse({
+    status: 200,
+    description: 'returns paginated judge assignments for the judge',
+    schema: {
+      example: {
+        data: [
+          {
+            id: '123e4567-e89b-12d3-a456-426614174060',
+            contestId: '123e4567-e89b-12d3-a456-426614174010',
+            judgeId: '123e4567-e89b-12d3-a456-426614174051',
+            assignedAt: '2026-01-08T08:00:00.000Z',
+          },
+        ],
+        page: 1,
+        totalItems: 1,
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'bad request, invalid uuid format' })
+  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
+  @ApiResponse({ status: 403, description: 'forbidden, admin, organizer, or judge role required' })
+  @ApiResponse({ status: 404, description: 'contest not found' })
   async findByJudge(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Param('judgeId', ParseUUIDPipe) judgeId: string,
@@ -112,9 +183,25 @@ export class JudgeAssignmentsController {
    */
   @Get(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE, RoleEnum.PARTICIPANT)
-  @ApiOperation({})
-  @ApiResponse({ status: 200, description: 'Judge assignment found' })
-  @ApiResponse({ status: 404, description: 'Judge assignment not found' })
+  @ApiOperation({ summary: 'get a judge assignment by id' })
+  @ApiParam({ name: 'contestId', type: String, description: 'contest uuid' })
+  @ApiParam({ name: 'id', type: String, description: 'judge assignment uuid' })
+  @ApiResponse({
+    status: 200,
+    description: 'returns the judge assignment',
+    schema: {
+      example: {
+        id: '123e4567-e89b-12d3-a456-426614174060',
+        contestId: '123e4567-e89b-12d3-a456-426614174010',
+        judgeId: '123e4567-e89b-12d3-a456-426614174051',
+        assignedAt: '2026-01-08T08:00:00.000Z',
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'bad request, invalid uuid format' })
+  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
+  @ApiResponse({ status: 403, description: 'forbidden, role is not allowed to view this resource' })
+  @ApiResponse({ status: 404, description: 'contest or judge assignment not found' })
   findOne(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Param('id', ParseUUIDPipe) id: string,
@@ -131,6 +218,14 @@ export class JudgeAssignmentsController {
   @Delete(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER)
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'delete a judge assignment by id' })
+  @ApiParam({ name: 'contestId', type: String, description: 'contest uuid' })
+  @ApiParam({ name: 'id', type: String, description: 'judge assignment uuid' })
+  @ApiResponse({ status: 204, description: 'judge assignment deleted successfully' })
+  @ApiResponse({ status: 400, description: 'bad request, invalid uuid format' })
+  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
+  @ApiResponse({ status: 403, description: 'forbidden, organizer or admin role required' })
+  @ApiResponse({ status: 404, description: 'contest or judge assignment not found' })
   remove(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Param('id', ParseUUIDPipe) id: string,

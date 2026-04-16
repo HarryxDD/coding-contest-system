@@ -12,7 +12,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtOrPatAuthGuard } from '@/auth/jwt-or-pat-auth.guard';
 import { JudgingCriteriaService } from './judging-criteria.service';
 import { RolesGuard } from '@/roles/roles.guard';
@@ -40,6 +40,34 @@ export class JudgingCriteriaController {
   @Post()
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER)
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'create judging criteria' })
+  @ApiParam({ name: 'contestId', type: String, description: 'contest uuid' })
+  @ApiBody({
+    schema: {
+      example: {
+        name: 'Code Quality',
+        description: 'evaluates readability and maintainability',
+        maxScore: 50,
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'judging criteria created successfully',
+    schema: {
+      example: {
+        id: '123e4567-e89b-12d3-a456-426614174052',
+        contestId: '123e4567-e89b-12d3-a456-426614174010',
+        name: 'Code Quality',
+        description: 'evaluates readability and maintainability',
+        maxScore: 50,
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'bad request, invalid contest uuid or criteria payload' })
+  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
+  @ApiResponse({ status: 403, description: 'forbidden, organizer or admin role required' })
+  @ApiResponse({ status: 404, description: 'contest not found' })
   create(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Body() createJudgingCriteriaDto: CreateJudgingCriteriaDto,
@@ -55,9 +83,34 @@ export class JudgingCriteriaController {
    * returns paginated judging criteria
    * @param queryDto - the pagination and filter options
    * @returns the paginated judging criteria list
-   */
+  */
   @Get()
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE, RoleEnum.PARTICIPANT)
+  @ApiOperation({ summary: 'list judging criteria for a contest' })
+  @ApiParam({ name: 'contestId', type: String, description: 'contest uuid' })
+  @ApiResponse({
+    status: 200,
+    description: 'returns paginated judging criteria',
+    schema: {
+      example: {
+        data: [
+          {
+            id: '123e4567-e89b-12d3-a456-426614174052',
+            contestId: '123e4567-e89b-12d3-a456-426614174010',
+            name: 'Code Quality',
+            description: 'evaluates readability and maintainability',
+            maxScore: 50,
+          },
+        ],
+        page: 1,
+        totalItems: 1,
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'bad request, invalid contest uuid format' })
+  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
+  @ApiResponse({ status: 403, description: 'forbidden, role is not allowed to view this resource' })
+  @ApiResponse({ status: 404, description: 'contest not found' })
   async findAll(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Query() queryDto: QueryJudgingCriteriaDto,
@@ -82,9 +135,26 @@ export class JudgingCriteriaController {
    */
   @Get(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER, RoleEnum.JUDGE, RoleEnum.PARTICIPANT)
-  @ApiOperation({})
-  @ApiResponse({ status: 200, description: 'Judging criteria found' })
-  @ApiResponse({ status: 404, description: 'Judging criteria not found' })
+  @ApiOperation({ summary: 'get judging criteria by id' })
+  @ApiParam({ name: 'contestId', type: String, description: 'contest uuid' })
+  @ApiParam({ name: 'id', type: String, description: 'judging criteria uuid' })
+  @ApiResponse({
+    status: 200,
+    description: 'returns the judging criteria',
+    schema: {
+      example: {
+        id: '123e4567-e89b-12d3-a456-426614174052',
+        contestId: '123e4567-e89b-12d3-a456-426614174010',
+        name: 'Code Quality',
+        description: 'evaluates readability and maintainability',
+        maxScore: 50,
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'bad request, invalid uuid format' })
+  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
+  @ApiResponse({ status: 403, description: 'forbidden, role is not allowed to view this resource' })
+  @ApiResponse({ status: 404, description: 'contest or judging criteria not found' })
   findOne(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Param('id', ParseUUIDPipe) id: string,
@@ -101,6 +171,34 @@ export class JudgingCriteriaController {
    */
   @Patch(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER)
+  @ApiOperation({ summary: 'update judging criteria by id' })
+  @ApiParam({ name: 'contestId', type: String, description: 'contest uuid' })
+  @ApiParam({ name: 'id', type: String, description: 'judging criteria uuid' })
+  @ApiBody({
+    schema: {
+      example: {
+        description: 'evaluates readability, testing, and maintainability',
+        maxScore: 60,
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'judging criteria updated successfully',
+    schema: {
+      example: {
+        id: '123e4567-e89b-12d3-a456-426614174052',
+        contestId: '123e4567-e89b-12d3-a456-426614174010',
+        name: 'Code Quality',
+        description: 'evaluates readability, testing, and maintainability',
+        maxScore: 60,
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'bad request, invalid uuid or criteria payload' })
+  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
+  @ApiResponse({ status: 403, description: 'forbidden, organizer or admin role required' })
+  @ApiResponse({ status: 404, description: 'contest or judging criteria not found' })
   update(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Param('id', ParseUUIDPipe) id: string,
@@ -122,6 +220,14 @@ export class JudgingCriteriaController {
   @Delete(':id')
   @Roles(RoleEnum.ADMIN, RoleEnum.ORGANIZER)
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'delete judging criteria by id' })
+  @ApiParam({ name: 'contestId', type: String, description: 'contest uuid' })
+  @ApiParam({ name: 'id', type: String, description: 'judging criteria uuid' })
+  @ApiResponse({ status: 204, description: 'judging criteria deleted successfully' })
+  @ApiResponse({ status: 400, description: 'bad request, invalid uuid format' })
+  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
+  @ApiResponse({ status: 403, description: 'forbidden, organizer or admin role required' })
+  @ApiResponse({ status: 404, description: 'contest or judging criteria not found' })
   remove(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Param('id', ParseUUIDPipe) id: string,
