@@ -149,6 +149,8 @@ The app listens on port `3000` by default.
 | Base | `http://localhost:3000` |
 | API prefix | `http://localhost:3000/api` |
 | Swagger docs | `http://localhost:3000/docs` |
+| Live API | `http://86.50.21.210` |
+| Live Swagger | `http://86.50.21.210/docs` |
 
 All endpoints are documented and testable through the Swagger UI. You can authorize using a JWT token from `POST /auth/login` or a PAT from `POST /pat`.
 
@@ -165,53 +167,34 @@ Run a specific test file:
 ```bash
 npm run test -- teams.controller.spec.ts
 ```
-### Coverage Information
 
-- **E2E Tests**: 150+ comprehensive tests covering all API endpoints
-- **Coverage Target**: >85% on testable files
-- **Excluded Files**: Entities, mappers, DTOs (see [Test Coverage Strategy](docs/TEST_COVERAGE_STRATEGY.md) for justification)
+Tests are written using Jest and Supertest. Each test suite boots a full NestJS application instance and sends real HTTP requests against it. To run tests successfully, make sure a PostgreSQL instance is running and the `.env` file is configured correctly.
 
-For detailed coverage strategy and exclusion justifications, see [Test Coverage Strategy & Documentation](docs/TEST_COVERAGE_STRATEGY.md).
 ## NestJS Best Practices
 
 This project follows key NestJS architectural principles and implements a hexagonal architecture pattern. 
 
-### Documentation
-
-For detailed information, refer to these project docs and official references:
-
-**Project Documentation**:
-- [Project Completion Report](docs/PROJECT_COMPLETION_REPORT.md) - Comprehensive status report for all tasks (coverage, UUID validation, best practices)
-- [NestJS Best Practices Implementation Guide](docs/NESTJS_BEST_PRACTICES.md) - Comprehensive guide on patterns used in this project
-- [Test Coverage Strategy & Documentation](docs/TEST_COVERAGE_STRATEGY.md) - Coverage targets, file exclusions, and testing approach
-- [URL Converters & UUID Validation](docs/URL_CONVERTERS_UUID_VALIDATION.md) - ParseUUIDPipe implementation on all endpoints
-
 **Official Documentation**:
-- [NestJS Official Documentation](https://docs.nestjs.com/) - Complete NestJS reference
-- [NestJS Fundamentals](https://docs.nestjs.com/first-steps) - Getting started guide
-- [Modules and Dependency Injection](https://docs.nestjs.com/modules) - Architecture overview
-- [Controllers & Routing](https://docs.nestjs.com/controllers) - Request handling
-- [Pipes and Validation](https://docs.nestjs.com/pipes) - Input validation
-- [Guards and Authorization](https://docs.nestjs.com/guards) - Security
-- [Database Integration](https://docs.nestjs.com/techniques/database) - Data persistence
-- [Testing](https://docs.nestjs.com/fundamentals/testing) - Testing strategies
+- [NestJS Official Documentation](https://docs.nestjs.com/): Complete NestJS reference
+- [NestJS Fundamentals](https://docs.nestjs.com/first-steps): Getting started guide
+- [Modules and Dependency Injection](https://docs.nestjs.com/modules): Architecture overview
+- [Controllers & Routing](https://docs.nestjs.com/controllers): Request handling
+- [Pipes and Validation](https://docs.nestjs.com/pipes): Input validation
+- [Guards and Authorization](https://docs.nestjs.com/guards): Security
+- [Database Integration](https://docs.nestjs.com/techniques/database): Data persistence
+- [Testing](https://docs.nestjs.com/fundamentals/testing): Testing strategies
 
 ### Implementation in This Project
 
-1. **Modular Architecture** - Feature modules (users, contests, teams, etc.) with clear separation of concerns
-2. **Dependency Injection** - Constructor-based injection managed by NestJS DI container
-3. **Authentication & Authorization** - JWT and PAT support with custom guards
-4. **Input Validation** - DTOs with class-validator decorators and ValidationPipe
-5. **Hexagonal Architecture** - Business logic decoupled from database layer
-6. **Comprehensive Testing** - 150+ E2E tests with Supertest covering all endpoints
-7. **API Documentation** - Swagger/OpenAPI integration for interactive API exploration
-8. **Repository Pattern** - Data access abstraction layer
-9. **Error Handling** - Centralized exception filters with meaningful responses
-10. **Configuration Management** - Environment-based configuration with type safety
-
-## Notes
-
-To run tests successfully, make sure a PostgreSQL instance is running and the `.env` file is configured correctly before starting the test suite.
+1. **Modular Architecture**: Feature modules (users, contests, teams, etc.) with clear separation of concerns
+2. **Dependency Injection**: Constructor-based injection managed by NestJS DI container
+3. **Authentication & Authorization**: JWT and PAT support with custom guards
+4. **Input Validation**: DTOs with class-validator decorators and ValidationPipe
+5. **Hexagonal Architecture**: Business logic decoupled from database layer
+6. **Comprehensive Testing**: Comprehensive E2E tests with Supertest covering all endpoints
+7. **API Documentation**: Swagger/OpenAPI integration for interactive API exploration
+8. **Repository Pattern**: Data access abstraction layer
+9. **Configuration Management**: Environment-based configuration with type safety
 
 ## License
 

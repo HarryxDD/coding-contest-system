@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:17.6-alpine
+    restart: always
     ports:
       - ${DATABASE_PORT}:5432
     volumes:
@@ -20,6 +21,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    restart: always
     ports:
       - ${APP_PORT}:${APP_PORT}
     depends_on:
