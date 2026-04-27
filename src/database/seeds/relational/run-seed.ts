@@ -9,9 +9,13 @@ import { SubmissionSeedService } from './submission/submission-seed.service';
 import { JudgeAssignmentSeedService } from './judge-assignment/judge-assignment-seed.service';
 import { ScoreSeedService } from './score/score-seed.service';
 import { PersonalAccessTokenSeedService } from './personal-access-token/personal-access-token-seed.service';
+import { DataSource } from 'typeorm';
 
 const runSeed = async () => {
   const app = await NestFactory.create(SeedModule);
+
+  const dataSource = app.get(DataSource);
+  await dataSource.synchronize();
 
   await app.get(UserSeedService).run();
   await app.get(PersonalAccessTokenSeedService).run();

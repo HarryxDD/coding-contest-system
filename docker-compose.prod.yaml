@@ -25,6 +25,12 @@ services:
       - NODE_ENV=production
       - APP_PORT=3000
 
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
   nginx:
     image: nginx:alpine
     restart: always
