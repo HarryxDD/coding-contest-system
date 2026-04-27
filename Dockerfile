@@ -6,7 +6,7 @@ RUN npm i -g @nestjs/cli typescript ts-node
 WORKDIR /usr/src/app
 
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 COPY . .
 COPY ./startup.relational.dev.sh /opt/startup.relational.dev.sh
