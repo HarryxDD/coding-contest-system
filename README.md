@@ -183,6 +183,8 @@ This project follows key NestJS architectural principles and implements a hexago
 - [Guards and Authorization](https://docs.nestjs.com/guards): Security
 - [Database Integration](https://docs.nestjs.com/techniques/database): Data persistence
 - [Testing](https://docs.nestjs.com/fundamentals/testing): Testing strategies
+- [Hexagonal Architecture in NestJS](https://medium.com/@sagarsishir51/mastering-hexagonal-architecture-in-nestjs-a-practical-guide-ccc10ed155bf): Architecture pattern used in this project
+- [NestJS Boilerplate Reference](https://github.com/brocoders/nestjs-boilerplate): Project structure reference
 
 ### Implementation in This Project
 
