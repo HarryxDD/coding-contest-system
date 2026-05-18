@@ -1,4 +1,5 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException, Inject } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, Inject, Logger } from "@nestjs/common";
+import { Cron, CronExpression } from "@nestjs/schedule";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Cache } from "cache-manager";
 import { contestRepository } from "./infrastructure/contest.repository";
@@ -12,6 +13,29 @@ export class ContestsService {
         private readonly contestRepository: contestRepository,
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     ) { }
+
+    private readonly logger = new Logger(ContestsService.name);
+
+    /**
+     * checks all contests every minute and updates isActive based on current time
+     */
+    @Cron(CronExpression.EVERY_MINUTE)
+    async syncContestActiveStatus() {
+        const now = new Date();
+        const result = await this.contestRepository.findManyWithPagination({
+            paginationOptions: { page: 1, limit: 100 },
+        });
+
+        for (const contest of result) {
+            const shouldBeActive = now >= new Date(contest.startDate) && now <= new Date(contest.endDate);
+            if (contest.isActive !== shouldBeActive) {
+                await this.contestRepository.update(contest.id, { isActive: shouldBeActive });
+                this.logger.log(`contest ${contest.id} isActive set to ${shouldBeActive}`);
+            }
+        }
+
+        await this.cacheManager.del('contests_list');
+    }
 
     /**
      * creates a contest

@@ -4,6 +4,7 @@ import databaseConfig from './database/config/database.config';
 import appConfig from './config/app.config';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmConfigService } from './database/typeorm-config.service';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { AuthModule } from './auth/auth.module';
@@ -46,6 +47,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
     JudgingCriteriaModule,
     JudgeAssignmentsModule,
     PersonalAccessTokensModule,
+    ScheduleModule.forRoot(),
   ],
 })
 export class AppModule {}
