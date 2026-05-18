@@ -30,18 +30,37 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   const options = new DocumentBuilder()
-    .setTitle('API')
-    .setDescription('API docs')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .addGlobalParameters({
-      in: 'header',
-      required: false,
-      name: process.env.APP_HEADER_LANGUAGE || 'x-custom-lang',
-      schema: {
-        example: 'en',
+    .setTitle('Coding Contest System API')
+    .setDescription(
+      `A comprehensive REST API for managing coding contests and hackathons.
+
+This system handles user authentication, contest management, team formation, project submissions, judge assignments, scoring criteria, and score recording. The API supports both JWT Bearer tokens and Personal Access Tokens (PAT) for authentication, allowing flexible integration with external tools and applications.
+
+Key features:
+- User authentication and authorization with JWT and Personal Access Tokens
+- Contest and hackathon management
+- Team formation and member management
+- Project submission handling and tracking
+- Judge assignment and management
+- Scoring criteria definition and scoring
+- Role-based access control
+
+This API is part of the Programmable Web Project (PWP) course at the University of Oulu.`,
+    )
+    .setVersion('1.0.0')
+    .setContact('PWP Course Team (Spring 2026)', 'pwp-course@lists.oulu.fi', 'https://www.oulu.fi/en')
+    .addServer('http://86.50.21.210', 'production server')
+    .addServer('http://localhost:3000', 'local development')
+    .setLicense('GNU General Public License v3.0', 'https://github.com/ivanmilara/PWP/blob/master/LICENSE')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'JWT Token (Bearer) or Personal Access Token',
       },
-    })
+      'bearer',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, options);

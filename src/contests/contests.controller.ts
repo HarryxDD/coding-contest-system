@@ -63,7 +63,17 @@ export class ContestsController {
             },
         },
     })
-    @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
+    @ApiResponse({
+        status: 401,
+        description: 'unauthorized, missing or invalid token',
+        schema: {
+            example: {
+                statusCode: 401,
+                message: 'Unauthorized',
+                error: 'Unauthorized',
+            },
+        },
+    })
     async findAll(@Query() query: QueryContestDto): Promise<InfinityPaginationResponseDto<Contest>> {
         const page = query?.page ?? 1;
         let limit = query?.limit ?? 10;
@@ -102,8 +112,28 @@ export class ContestsController {
             },
         },
     })
-    @ApiResponse({ status: 400, description: 'bad request, invalid uuid format' })
-    @ApiResponse({ status: 404, description: 'contest not found' })
+    @ApiResponse({
+        status: 400,
+        description: 'bad request, invalid uuid format',
+        schema: {
+            example: {
+                statusCode: 400,
+                message: ['id must be a UUID'],
+                error: 'Bad Request',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'contest not found',
+        schema: {
+            example: {
+                statusCode: 404,
+                message: 'resource not found',
+                error: 'Not Found',
+            },
+        },
+    })
     findOne(@Param('id', ParseUUIDPipe) id: string) {
         return this.contestsService.findOne(id);
     }
@@ -137,9 +167,39 @@ export class ContestsController {
             },
         },
     })
-    @ApiResponse({ status: 400, description: 'bad request, invalid uuid format' })
-    @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-    @ApiResponse({ status: 404, description: 'contest not found' })
+    @ApiResponse({
+        status: 400,
+        description: 'bad request, invalid uuid format',
+        schema: {
+            example: {
+                statusCode: 400,
+                message: ['id must be a UUID'],
+                error: 'Bad Request',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'unauthorized, missing or invalid token',
+        schema: {
+            example: {
+                statusCode: 401,
+                message: 'Unauthorized',
+                error: 'Unauthorized',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'contest not found',
+        schema: {
+            example: {
+                statusCode: 404,
+                message: 'resource not found',
+                error: 'Not Found',
+            },
+        },
+    })
     async findTeams(
         @Param('id', ParseUUIDPipe) contestId: string,
         @Query() query: QueryTeamDto,
@@ -198,9 +258,39 @@ export class ContestsController {
             },
         },
     })
-    @ApiResponse({ status: 400, description: 'bad request, invalid contest payload' })
-    @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-    @ApiResponse({ status: 403, description: 'forbidden, organizer or admin role required' })
+    @ApiResponse({
+        status: 400,
+        description: 'bad request, invalid contest payload',
+        schema: {
+            example: {
+                statusCode: 400,
+                message: ['name should not be empty'],
+                error: 'Bad Request',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'unauthorized, missing or invalid token',
+        schema: {
+            example: {
+                statusCode: 401,
+                message: 'Unauthorized',
+                error: 'Unauthorized',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 403,
+        description: 'forbidden, organizer or admin role required',
+        schema: {
+            example: {
+                statusCode: 403,
+                message: 'Forbidden resource',
+                error: 'Forbidden',
+            },
+        },
+    })
     create(@Body() createContestDto: CreateContestDto, @Request() req) {
         return this.contestsService.create(createContestDto, req.user.id);
     }
@@ -248,10 +338,50 @@ export class ContestsController {
             },
         },
     })
-    @ApiResponse({ status: 400, description: 'bad request, invalid uuid or contest payload' })
-    @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-    @ApiResponse({ status: 403, description: 'forbidden, you are not authorized to edit this contest' })
-    @ApiResponse({ status: 404, description: 'contest not found' })
+    @ApiResponse({
+        status: 400,
+        description: 'bad request, invalid uuid or contest payload',
+        schema: {
+            example: {
+                statusCode: 400,
+                message: ['id must be a UUID'],
+                error: 'Bad Request',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'unauthorized, missing or invalid token',
+        schema: {
+            example: {
+                statusCode: 401,
+                message: 'Unauthorized',
+                error: 'Unauthorized',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 403,
+        description: 'forbidden, you are not authorized to edit this contest',
+        schema: {
+            example: {
+                statusCode: 403,
+                message: 'Forbidden resource',
+                error: 'Forbidden',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'contest not found',
+        schema: {
+            example: {
+                statusCode: 404,
+                message: 'resource not found',
+                error: 'Not Found',
+            },
+        },
+    })
     update(@Param('id', ParseUUIDPipe) id: string, @Body() updateContestDto: UpdateContestDto, @Request() req) {
         const isAdmin = req.user.role === RoleEnum.ADMIN;
         return this.contestsService.update(id, updateContestDto, req.user.id, isAdmin);
@@ -271,10 +401,50 @@ export class ContestsController {
     @ApiOperation({ summary: 'delete a contest by id' })
     @ApiParam({ name: 'id', type: String, description: 'contest uuid' })
     @ApiResponse({ status: 204, description: 'contest deleted successfully' })
-    @ApiResponse({ status: 400, description: 'bad request, invalid uuid format' })
-    @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-    @ApiResponse({ status: 403, description: 'forbidden, you are not authorized to delete this contest' })
-    @ApiResponse({ status: 404, description: 'contest not found' })
+    @ApiResponse({
+        status: 400,
+        description: 'bad request, invalid uuid format',
+        schema: {
+            example: {
+                statusCode: 400,
+                message: ['id must be a UUID'],
+                error: 'Bad Request',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'unauthorized, missing or invalid token',
+        schema: {
+            example: {
+                statusCode: 401,
+                message: 'Unauthorized',
+                error: 'Unauthorized',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 403,
+        description: 'forbidden, you are not authorized to delete this contest',
+        schema: {
+            example: {
+                statusCode: 403,
+                message: 'Forbidden resource',
+                error: 'Forbidden',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'contest not found',
+        schema: {
+            example: {
+                statusCode: 404,
+                message: 'resource not found',
+                error: 'Not Found',
+            },
+        },
+    })
     remove(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
         const isAdmin = req.user.role === RoleEnum.ADMIN;
         return this.contestsService.remove(id, req.user.id, isAdmin);

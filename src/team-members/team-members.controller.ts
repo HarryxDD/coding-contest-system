@@ -58,9 +58,39 @@ export class TeamMembersController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'bad request, invalid team uuid format' })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 404, description: 'team not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid team uuid format',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['teamId must be a UUID'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'team not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'resource not found',
+        error: 'Not Found',
+      },
+    },
+  })
   async findAll(
     @Param('teamId', ParseUUIDPipe) teamId: string,
     @Query() query: QueryTeamMemberDto,
@@ -95,9 +125,39 @@ export class TeamMembersController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'bad request, invalid uuid format' })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 404, description: 'team or membership not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid uuid format',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['id must be a UUID'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'team or membership not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'resource not found',
+        error: 'Not Found',
+      },
+    },
+  })
   findOne(
     @Param('teamId', ParseUUIDPipe) teamId: string,
     @Param('id', ParseUUIDPipe) id: string,
@@ -121,6 +181,7 @@ export class TeamMembersController {
   @ApiBody({
     schema: {
       example: {
+        teamId: '123e4567-e89b-12d3-a456-426614174020',
         userId: '123e4567-e89b-12d3-a456-426614174031',
       },
     },
@@ -137,11 +198,61 @@ export class TeamMembersController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'bad request, invalid team uuid or membership payload' })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 403, description: 'forbidden, participant or admin role required' })
-  @ApiResponse({ status: 404, description: 'team or contest not found' })
-  @ApiResponse({ status: 409, description: 'conflict, user is already a member of this team' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid team uuid or membership payload',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['userId must be a UUID'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'forbidden, participant or admin role required',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'team or contest not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'resource not found',
+        error: 'Not Found',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'conflict, user is already a member of this team',
+    schema: {
+      example: {
+        statusCode: 409,
+        message: 'resource already exists',
+        error: 'Conflict',
+      },
+    },
+  })
   create(
     @Param('teamId', ParseUUIDPipe) teamId: string,
     @Body() createTeamMemberDto: CreateTeamMemberDto,
@@ -169,10 +280,50 @@ export class TeamMembersController {
   @ApiParam({ name: 'teamId', type: String, description: 'team uuid' })
   @ApiParam({ name: 'id', type: String, description: 'team member uuid' })
   @ApiResponse({ status: 204, description: 'team member removed successfully' })
-  @ApiResponse({ status: 400, description: 'bad request, invalid uuid format' })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 403, description: 'forbidden, you are not authorized to remove this membership' })
-  @ApiResponse({ status: 404, description: 'team or membership not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid uuid format',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['id must be a UUID'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'forbidden, you are not authorized to remove this membership',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'team or membership not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'resource not found',
+        error: 'Not Found',
+      },
+    },
+  })
   remove(
     @Param('teamId', ParseUUIDPipe) teamId: string,
     @Param('id', ParseUUIDPipe) id: string,

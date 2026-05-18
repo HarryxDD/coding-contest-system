@@ -45,6 +45,7 @@ export class JudgingCriteriaController {
   @ApiBody({
     schema: {
       example: {
+        contestId: '123e4567-e89b-12d3-a456-426614174010',
         name: 'Code Quality',
         description: 'evaluates readability and maintainability',
         maxScore: 50,
@@ -64,10 +65,50 @@ export class JudgingCriteriaController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'bad request, invalid contest uuid or criteria payload' })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 403, description: 'forbidden, organizer or admin role required' })
-  @ApiResponse({ status: 404, description: 'contest not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid contest uuid or criteria payload',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['name must be longer than or equal to 1 characters'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'forbidden, organizer or admin role required',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'contest not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'resource not found',
+        error: 'Not Found',
+      },
+    },
+  })
   create(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Body() createJudgingCriteriaDto: CreateJudgingCriteriaDto,
@@ -107,10 +148,50 @@ export class JudgingCriteriaController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'bad request, invalid contest uuid format' })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 403, description: 'forbidden, role is not allowed to view this resource' })
-  @ApiResponse({ status: 404, description: 'contest not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid contest uuid format',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['contestId must be a UUID'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'forbidden, role is not allowed to view this resource',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'contest not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'resource not found',
+        error: 'Not Found',
+      },
+    },
+  })
   async findAll(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Query() queryDto: QueryJudgingCriteriaDto,
@@ -151,10 +232,50 @@ export class JudgingCriteriaController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'bad request, invalid uuid format' })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 403, description: 'forbidden, role is not allowed to view this resource' })
-  @ApiResponse({ status: 404, description: 'contest or judging criteria not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid uuid format',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['id must be a UUID'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'forbidden, role is not allowed to view this resource',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'contest or judging criteria not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'resource not found',
+        error: 'Not Found',
+      },
+    },
+  })
   findOne(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Param('id', ParseUUIDPipe) id: string,
@@ -195,10 +316,50 @@ export class JudgingCriteriaController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'bad request, invalid uuid or criteria payload' })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 403, description: 'forbidden, organizer or admin role required' })
-  @ApiResponse({ status: 404, description: 'contest or judging criteria not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid uuid or criteria payload',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['maxScore must not be less than 1'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'forbidden, organizer or admin role required',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'contest or judging criteria not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'resource not found',
+        error: 'Not Found',
+      },
+    },
+  })
   update(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Param('id', ParseUUIDPipe) id: string,
@@ -224,10 +385,50 @@ export class JudgingCriteriaController {
   @ApiParam({ name: 'contestId', type: String, description: 'contest uuid' })
   @ApiParam({ name: 'id', type: String, description: 'judging criteria uuid' })
   @ApiResponse({ status: 204, description: 'judging criteria deleted successfully' })
-  @ApiResponse({ status: 400, description: 'bad request, invalid uuid format' })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 403, description: 'forbidden, organizer or admin role required' })
-  @ApiResponse({ status: 404, description: 'contest or judging criteria not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid uuid format',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['id must be a UUID'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'forbidden, organizer or admin role required',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'contest or judging criteria not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'resource not found',
+        error: 'Not Found',
+      },
+    },
+  })
   remove(
     @Param('contestId', ParseUUIDPipe) contestId: string,
     @Param('id', ParseUUIDPipe) id: string,

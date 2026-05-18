@@ -53,9 +53,39 @@ export class UsersController {
             },
         },
     })
-    @ApiResponse({ status: 400, description: 'bad request, invalid user payload' })
-    @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-    @ApiResponse({ status: 403, description: 'forbidden, admin role required' })
+    @ApiResponse({
+        status: 400,
+        description: 'bad request, invalid user payload',
+        schema: {
+            example: {
+                statusCode: 400,
+                message: ['email must be an email'],
+                error: 'Bad Request',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'unauthorized, missing or invalid token',
+        schema: {
+            example: {
+                statusCode: 401,
+                message: 'Unauthorized',
+                error: 'Unauthorized',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 403,
+        description: 'forbidden, admin role required',
+        schema: {
+            example: {
+                statusCode: 403,
+                message: 'Forbidden resource',
+                error: 'Forbidden',
+            },
+        },
+    })
     create(@Body() createUserDto: CreateUserDto) {
         return this.usersService.create(createUserDto)
     }
@@ -95,8 +125,28 @@ export class UsersController {
             },
         },
     })
-    @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-    @ApiResponse({ status: 403, description: 'forbidden, admin or organizer role required' })
+    @ApiResponse({
+        status: 401,
+        description: 'unauthorized, missing or invalid token',
+        schema: {
+            example: {
+                statusCode: 401,
+                message: 'Unauthorized',
+                error: 'Unauthorized',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 403,
+        description: 'forbidden, admin or organizer role required',
+        schema: {
+            example: {
+                statusCode: 403,
+                message: 'Forbidden resource',
+                error: 'Forbidden',
+            },
+        },
+    })
     async findAll(@Query() queryDto: QueryUserDto): Promise<InfinityPaginationResponseDto<User>> {
         const page = queryDto?.page ?? 1;
         let limit = queryDto?.limit ?? 10;
@@ -134,9 +184,39 @@ export class UsersController {
             },
         },
     })
-    @ApiResponse({ status: 400, description: 'bad request, invalid uuid format' })
-    @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-    @ApiResponse({ status: 404, description: 'user not found' })
+    @ApiResponse({
+        status: 400,
+        description: 'bad request, invalid uuid format',
+        schema: {
+            example: {
+                statusCode: 400,
+                message: ['id must be a UUID'],
+                error: 'Bad Request',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'unauthorized, missing or invalid token',
+        schema: {
+            example: {
+                statusCode: 401,
+                message: 'Unauthorized',
+                error: 'Unauthorized',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'user not found',
+        schema: {
+            example: {
+                statusCode: 404,
+                message: 'resource not found',
+                error: 'Not Found',
+            },
+        },
+    })
     findOne(@Param('id', ParseUUIDPipe) id: string) {
         return this.usersService.findOne(id);
     }
@@ -177,10 +257,50 @@ export class UsersController {
             },
         },
     })
-    @ApiResponse({ status: 400, description: 'bad request, invalid uuid or update payload' })
-    @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-    @ApiResponse({ status: 403, description: 'forbidden, you can only update your own profile' })
-    @ApiResponse({ status: 404, description: 'user not found' })
+    @ApiResponse({
+        status: 400,
+        description: 'bad request, invalid uuid or update payload',
+        schema: {
+            example: {
+                statusCode: 400,
+                message: ['id must be a UUID'],
+                error: 'Bad Request',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'unauthorized, missing or invalid token',
+        schema: {
+            example: {
+                statusCode: 401,
+                message: 'Unauthorized',
+                error: 'Unauthorized',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 403,
+        description: 'forbidden, you can only update your own profile',
+        schema: {
+            example: {
+                statusCode: 403,
+                message: 'Forbidden resource',
+                error: 'Forbidden',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'user not found',
+        schema: {
+            example: {
+                statusCode: 404,
+                message: 'resource not found',
+                error: 'Not Found',
+            },
+        },
+    })
     async update(@Param('id', ParseUUIDPipe) id: string, @Body() updateDto: UpdateUserDto, @Request() req) {
         if (req.user.role !== RoleEnum.ADMIN && req.user.id !== id) {
             throw new ForbiddenException('You can only update your own profile');
@@ -199,8 +319,28 @@ export class UsersController {
     @ApiOperation({ summary: 'delete a user by id' })
     @ApiParam({ name: 'id', type: String, description: 'user uuid' })
     @ApiResponse({ status: 204, description: 'user deleted successfully' })
-    @ApiResponse({ status: 400, description: 'bad request, invalid uuid format' })
-    @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
+    @ApiResponse({
+        status: 400,
+        description: 'bad request, invalid uuid format',
+        schema: {
+            example: {
+                statusCode: 400,
+                message: ['id must be a UUID'],
+                error: 'Bad Request',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'unauthorized, missing or invalid token',
+        schema: {
+            example: {
+                statusCode: 401,
+                message: 'Unauthorized',
+                error: 'Unauthorized',
+            },
+        },
+    })
     remove(@Param('id', ParseUUIDPipe) id: string) {
         return this.usersService.remove(id);
     }

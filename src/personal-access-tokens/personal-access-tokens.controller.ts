@@ -53,9 +53,39 @@ export class PersonalAccessTokensController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'bad request, invalid token payload' })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 403, description: 'forbidden, requested permissions not allowed' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid token payload',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['permissions must be an array'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'forbidden, requested permissions not allowed',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden',
+      },
+    },
+  })
   async create(@Body() dto: CreatePatDto, @Request() req) {
     const expiresAt = dto.expiresAt ? new Date(dto.expiresAt) : null;
     const { token, record } = await this.patService.createForUser({
@@ -100,7 +130,17 @@ export class PersonalAccessTokensController {
       ],
     },
   })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
   async list(@Request() req) {
     const rows = await this.patService.listForUser(req.user.id);
     return rows.map((t) => ({
@@ -126,9 +166,39 @@ export class PersonalAccessTokensController {
   @ApiOperation({ summary: 'revoke a personal access token' })
   @ApiParam({ name: 'id', type: String, description: 'personal access token uuid' })
   @ApiResponse({ status: 204, description: 'personal access token revoked successfully' })
-  @ApiResponse({ status: 400, description: 'bad request, invalid uuid format' })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 403, description: 'forbidden, only the token owner or an admin can revoke it' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid uuid format',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['id must be a UUID'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'forbidden, only the token owner or an admin can revoke it',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden',
+      },
+    },
+  })
   async revoke(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     await this.patService.revokeForUser({
       tokenId: id,

@@ -43,8 +43,28 @@ export class AuthController {
             },
         },
     })
-    @ApiResponse({ status: 400, description: 'bad request, invalid login payload' })
-    @ApiResponse({ status: 401, description: 'unauthorized, invalid email or password' })
+    @ApiResponse({
+        status: 400,
+        description: 'bad request, invalid login payload',
+        schema: {
+            example: {
+                statusCode: 400,
+                message: ['email must be an email'],
+                error: 'Bad Request',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'unauthorized, invalid email or password',
+        schema: {
+            example: {
+                statusCode: 401,
+                message: 'Unauthorized',
+                error: 'Unauthorized',
+            },
+        },
+    })
     public async login(@Body() loginDto: AuthLoginDto) {
         return this.authService.validateLogin(loginDto);
     }
@@ -84,7 +104,28 @@ export class AuthController {
             },
         },
     })
-    @ApiResponse({ status: 400, description: 'bad request, invalid registration payload' })
+    @ApiResponse({
+        status: 400,
+        description: 'bad request, invalid registration payload',
+        schema: {
+            example: {
+                statusCode: 400,
+                message: ['email must be an email'],
+                error: 'Bad Request',
+            },
+        },
+    })
+    @ApiResponse({
+        status: 422,
+        description: 'unprocessable entity, email or username already taken',
+        schema: {
+            example: {
+                statusCode: 422,
+                message: 'email already exists',
+                error: 'Unprocessable Entity',
+            },
+        },
+    })
     public async register(@Body() registerDto: AuthRegisterDto) {
         return this.authService.register(registerDto);
     }

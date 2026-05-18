@@ -64,9 +64,39 @@ export class ScoresController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'bad request, invalid submission uuid format' })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 404, description: 'submission not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid submission uuid format',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['submissionId must be a UUID'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'submission not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'resource not found',
+        error: 'Not Found',
+      },
+    },
+  })
   async findAll(
     @Param('submissionId', ParseUUIDPipe) submissionId: string,
     @Query() query: QueryScoreDto,
@@ -105,9 +135,39 @@ export class ScoresController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'bad request, invalid uuid format' })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 404, description: 'submission or score not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid uuid format',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['id must be a UUID'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'submission or score not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'resource not found',
+        error: 'Not Found',
+      },
+    },
+  })
   findOne(
     @Param('submissionId', ParseUUIDPipe) submissionId: string,
     @Param('id', ParseUUIDPipe) id: string,
@@ -131,6 +191,7 @@ export class ScoresController {
   @ApiBody({
     schema: {
       example: {
+        submissionId: '123e4567-e89b-12d3-a456-426614174040',
         criteriaId: '123e4567-e89b-12d3-a456-426614174052',
         score: 8,
         feedback: 'strong implementation and clean structure',
@@ -153,11 +214,61 @@ export class ScoresController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'bad request, invalid submission uuid or score payload' })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 403, description: 'forbidden, you are not assigned to judge this contest' })
-  @ApiResponse({ status: 404, description: 'submission or judging criteria not found' })
-  @ApiResponse({ status: 409, description: 'conflict, score already exists for this criteria' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid submission uuid or score payload',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['score must not be less than 0'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'forbidden, you are not assigned to judge this contest',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'submission or judging criteria not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'resource not found',
+        error: 'Not Found',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'conflict, score already exists for this criteria',
+    schema: {
+      example: {
+        statusCode: 409,
+        message: 'resource already exists',
+        error: 'Conflict',
+      },
+    },
+  })
   create(
     @Param('submissionId', ParseUUIDPipe) submissionId: string,
     @Body() createScoreDto: CreateScoreDto,
@@ -208,10 +319,50 @@ export class ScoresController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'bad request, invalid uuid or score payload' })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 403, description: 'forbidden, you can only update your own scores' })
-  @ApiResponse({ status: 404, description: 'submission or score not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid uuid or score payload',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['score must not be less than 0'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'forbidden, you can only update your own scores',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'submission or score not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'resource not found',
+        error: 'Not Found',
+      },
+    },
+  })
   update(
     @Param('submissionId', ParseUUIDPipe) submissionId: string,
     @Param('id', ParseUUIDPipe) id: string,
@@ -242,10 +393,50 @@ export class ScoresController {
   @ApiParam({ name: 'submissionId', type: String, description: 'submission uuid' })
   @ApiParam({ name: 'id', type: String, description: 'score uuid' })
   @ApiResponse({ status: 204, description: 'score deleted successfully' })
-  @ApiResponse({ status: 400, description: 'bad request, invalid uuid format' })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 403, description: 'forbidden, you can only delete your own scores' })
-  @ApiResponse({ status: 404, description: 'submission or score not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid uuid format',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['id must be a UUID'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'forbidden, you can only delete your own scores',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'submission or score not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'resource not found',
+        error: 'Not Found',
+      },
+    },
+  })
   remove(
     @Param('submissionId', ParseUUIDPipe) submissionId: string,
     @Param('id', ParseUUIDPipe) id: string,

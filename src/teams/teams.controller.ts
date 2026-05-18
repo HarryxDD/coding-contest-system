@@ -57,7 +57,17 @@ export class TeamsController {
       },
     },
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized, missing or invalid token' })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
   @Get()
   async findAll(
     @Query() query: QueryTeamDto,
@@ -89,8 +99,28 @@ export class TeamsController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'bad request, invalid UUID format' })
-  @ApiResponse({ status: 404, description: 'team not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid uuid format',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['id must be a UUID'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'team not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'resource not found',
+        error: 'Not Found',
+      },
+    },
+  })
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.teamsService.findOne(id);
@@ -117,7 +147,7 @@ export class TeamsController {
   })
   @ApiResponse({
     status: 201,
-    description: 'Team created successfully',
+    description: 'team created successfully',
     schema: {
       example: {
         id: '123e4567-e89b-12d3-a456-426614174000',
@@ -127,10 +157,50 @@ export class TeamsController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'Bad request, missing required fields' })
-  @ApiResponse({ status: 401, description: 'Unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 403, description: 'Forbidden, insufficient role' })
-  @ApiResponse({ status: 404, description: 'Contest not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, missing required fields',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['name should not be empty'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'forbidden, insufficient role',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'contest not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'resource not found',
+        error: 'Not Found',
+      },
+    },
+  })
   @Post()
   create(@Body() createTeamDto: CreateTeamDto, @Request() req) {
     return this.teamsService.create(createTeamDto, req.user.id);
@@ -156,7 +226,7 @@ export class TeamsController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Team updated successfully',
+    description: 'team updated successfully',
     schema: {
       example: {
         id: '123e4567-e89b-12d3-a456-426614174000',
@@ -166,10 +236,50 @@ export class TeamsController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'bad request, invalid UUID format' })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 403, description: 'forbidden, not the team creator or admin' })
-  @ApiResponse({ status: 404, description: 'team not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid uuid format',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['id must be a UUID'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'forbidden, not the team creator or admin',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'team not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'resource not found',
+        error: 'Not Found',
+      },
+    },
+  })
   @Patch(':id')
   update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -192,10 +302,50 @@ export class TeamsController {
   @ApiOperation({ summary: 'delete a team by id' })
   @ApiParam({ name: 'id', type: String, description: 'team uuid' })
   @ApiResponse({ status: 204, description: 'team deleted successfully' })
-  @ApiResponse({ status: 400, description: 'bad request, invalid UUID format' })
-  @ApiResponse({ status: 401, description: 'unauthorized, missing or invalid token' })
-  @ApiResponse({ status: 403, description: 'forbidden, not the team creator or admin' })
-  @ApiResponse({ status: 404, description: 'team not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'bad request, invalid uuid format',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['id must be a UUID'],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'unauthorized, missing or invalid token',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: 'Unauthorized',
+        error: 'Unauthorized',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'forbidden, not the team creator or admin',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Forbidden resource',
+        error: 'Forbidden',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'team not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'resource not found',
+        error: 'Not Found',
+      },
+    },
+  })
   @Delete(':id')
   remove(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     const isAdmin = req.user.role === RoleEnum.ADMIN;
