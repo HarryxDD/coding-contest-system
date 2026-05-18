@@ -45,7 +45,7 @@
 ### Notes
 - Instructor reviewed the resource table and pointed out that the hierarchy was too flat with most resources connecting directly to root
 
-## Meeting 4 (Midterm Meeting).
+## Meeting 4 (Midterm meeting)
 * **DATE:** 16.04.2026, 09:30 - 10:00 AM
 * **PARTICIPANTS:** Vu Truong, Mubeen Khan, Eshmam Rayed, Muhammad Abdur Rehman
 * **TEACHER:** Iván Sánchez Milara
@@ -60,17 +60,6 @@
 
 ### Notes
 - Instructor noted that responses and error codes were implemented in the code but were not visible in the Swagger UI
-
-## Midterm meeting
-* **DATE:**
-* **PARTICIPANTS:**
-* **TEACHER:**
-
-### Action points
-*List here the actions points discussed with assistants*
-
-### Notes
-*Add here notes that you consider important. This is not mandatory*
 
 ## Final meeting
 * **DATE:** 18.05.2026, 13:00 - 14:00
