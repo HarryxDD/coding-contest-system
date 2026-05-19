@@ -21,7 +21,7 @@
 
 ### Action points
 - Overall database design was good but the project scope was flagged as too large and could be reduced
-- Junction tables like team_members and judge_assignments were noted as having unnecessary extra columns. A pure junction table only needs the two foreign key IDs and a composite primary key, the additional fields like joined_at and assigned_at are not strictly necessary
+- Junction tables like team_members and judge_assignments were noted as having unnecessary extra columns, a pure junction table only needs the two foreign key IDs and a composite primary key
 - Add a Use of AI tools section to the document
 
 ### Notes
@@ -39,14 +39,14 @@
 - Connectedness will be reviewed in the next deliverable
 - Add a link to NestJS best practices in the project documentation
 - Add code documentation to all public methods across the codebase
-- Justify which files are excluded from test coverage, focusing on the fact that what needs testing is the API itself
+- Justify which files are excluded from test coverage, keeping in mind that what needs testing is the API itself
 - Document how URL converters are implemented and note that ParseUUIDPipe is supported by default in NestJS
 
 ### Notes
 - Instructor reviewed the resource table and pointed out that the hierarchy was too flat with most resources connecting directly to root
 
 ## Meeting 4 (Midterm meeting)
-* **DATE:** 16.04.2026, 09:30 - 10:00 AM
+* **DATE:** 16.04.2026, 09:30 - 10:00
 * **PARTICIPANTS:** Vu Truong, Mubeen Khan, Eshmam Rayed, Muhammad Abdur Rehman
 * **TEACHER:** Iván Sánchez Milara
 
@@ -66,8 +66,10 @@
 * **PARTICIPANTS:** Vu Truong, Mubeen Khan, Eshmam Rayed, Muhammad Abdur Rehman
 * **TEACHER:** Iván Sánchez Milara
 
-### Minutes
-*Summary of what was discussed during the meeting*
+### Action points
+- Add edit functionality to the CLI client before final grading
 
 ### Notes
-*Add here notes that you consider important. This is not mandatory*
+- Instructor was happy with the overall project and the CLI demonstration went well
+- Edit feature was implemented after the meeting using PATCH /contests/{contestId} and a demo video was sent to the instructor by email
+- Pub/sub architecture using amqplib was suggested as a future improvement for the notification service
